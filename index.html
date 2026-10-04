@@ -1,0 +1,1829 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OmniLingual • Learn any language, in any language</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'sans-serif']
+      },
+      colors: {
+        ink: '#16242B',
+        slate2: '#5A6B72',
+        cream: '#FBF7F1',
+        brand: '#12A56B',
+        brandDark: '#0C7B4F',
+        brandSoft: '#E4F6EE',
+        amber2: '#F5A524',
+        coral: '#F2685C',
+        sky2: '#2C93D5',
+        plum: '#8B5CF6'
+      },
+      boxShadow: {
+        soft: '0 18px 40px -22px rgba(22,36,43,.28)',
+        card: '0 10px 30px -18px rgba(22,36,43,.35)'
+      }
+    }
+  }
+}
+</script>
+<style>
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+* { -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Inter', 'Noto Sans Arabic', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; }
+h1, h2, h3, h4, h5, .font-display { font-family: 'Outfit', 'Noto Sans Arabic', 'Noto Sans SC', sans-serif; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+::selection { background: #12A56B; color: #fff; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px) } to { opacity: 1; transform: none } }
+@keyframes popIn { 0% { opacity: 0; transform: scale(.6) translateY(14px) } 70% { transform: scale(1.06) translateY(0) } 100% { opacity: 1; transform: scale(1) } }
+@keyframes floatY { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(18,165,107,.45), 0 7px 0 rgba(0,0,0,.16) }
+  70% { box-shadow: 0 0 0 18px rgba(18,165,107,0), 0 7px 0 rgba(0,0,0,.16) }
+  100% { box-shadow: 0 0 0 0 rgba(18,165,107,0), 0 7px 0 rgba(0,0,0,.16) }
+}
+@keyframes shakeX { 0%, 100% { transform: translateX(0) } 20% { transform: translateX(-7px) } 40% { transform: translateX(7px) } 60% { transform: translateX(-5px) } 80% { transform: translateX(5px) } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(.95) } to { opacity: 1; transform: none } }
+@keyframes shimmer { from { transform: translateX(-120%) skewX(-18deg) } to { transform: translateX(220%) skewX(-18deg) } }
+.reveal { opacity: 0; animation: fadeUp .78s cubic-bezier(.22,1,.36,1) forwards; animation-delay: var(--d, 0ms) }
+.pop { animation: popIn .6s cubic-bezier(.34,1.56,.64,1) forwards; opacity: 0; animation-delay: var(--d, 0ms) }
+.float-slow { animation: floatY 7s ease-in-out infinite; }
+.float-mid { animation: floatY 5.2s ease-in-out infinite; }
+.btn-3d { position: relative; overflow: hidden; isolation: isolate; transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease; }
+.btn-3d:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.16) !important; }
+.btn-3d::after { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.38) 48%, transparent 76%); transform: translateX(-120%) skewX(-18deg); opacity: 0; pointer-events: none; }
+.btn-3d:hover::after { opacity: 1; animation: shimmer .85s ease; }
+.lesson-node { box-shadow: 0 7px 0 rgba(0,0,0,.16), 0 0 0 4px #fff; transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease, filter .25s ease; }
+.lesson-node:hover { transform: translateY(-3px) scale(1.05); filter: saturate(1.08); }
+.lesson-node:active { transform: translateY(3px) scale(.98); box-shadow: 0 3px 0 rgba(0,0,0,.18), 0 0 0 4px #fff; }
+.lesson-node.locked { box-shadow: 0 6px 0 #DCE3E6; background: #E6EAEA; color: #A5B0B4; }
+.lesson-node.current { animation: pulseRing 2.4s ease-out infinite; }
+.word-tile { box-shadow: 0 3px 0 #DCE3E6; border: 2px solid #E4EAEA; transition: transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s ease, background-color .16s ease, border-color .16s ease, opacity .16s; }
+.word-tile:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #DCE3E6; }
+.word-tile.selected { box-shadow: 0 3px 0 #A7DCC6; border-color: #6BCBA4; background: #E9F8F1; }
+.word-tile.used { opacity: .32; pointer-events: none; transform: scale(.94); }
+.choice-card { box-shadow: 0 3px 0 #E2E8E8; transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s, border-color .18s, background-color .18s; }
+.choice-card:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #E2E8E8; border-color: #B7D7E9; }
+.choice-card.selected { box-shadow: 0 3px 0 #7EC8E8; border-color: #2C93D5; background: #EAF5FC; transform: translateY(-2px); }
+.nav-item { position: relative; transition: background-color .22s ease, color .22s ease, border-color .22s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.nav-item:hover { transform: translateX(3px); }
+.card-hover { transition: transform .32s cubic-bezier(.22,1,.36,1), box-shadow .32s ease, border-color .3s ease; }
+.card-hover:hover { transform: translateY(-5px); box-shadow: 0 26px 50px -30px rgba(22,36,43,.55); border-color: #CBD9D6; }
+.toast { animation: toastIn .35s cubic-bezier(.34,1.56,.64,1) both; }
+.tabular { font-variant-numeric: tabular-nums; }
+.shake { animation: shakeX .5s ease; }
+.zh-key { height: 44px; border-radius: 10px; background: #fff; border: 2px solid #E7E2DA; box-shadow: 0 3px 0 #E7E2DA; font-weight: 800; font-size: 14px; color: #16242B; transition: all .14s cubic-bezier(.34,1.56,.64,1); user-select: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.zh-key:hover { background: #F6F2EC; transform: translateY(-2px); box-shadow: 0 5px 0 #E7E2DA; }
+.zh-key:active { transform: translateY(2px); box-shadow: 0 1px 0 #E7E2DA; }
+.zh-key.fn { background: #16242B; color: #fff; border-color: #16242B; box-shadow: 0 3px 0 #0B171C; }
+.zh-key.fn:hover { background: #24363F; }
+.zh-cand { animation: popIn .2s ease both; min-width: 48px; padding: 8px 12px; border-radius: 12px; background: #fff; border: 2px solid #E7E2DA; font-weight: 800; font-size: 16px; box-shadow: 0 3px 0 #E7E2DA; transition: all .16s ease; cursor: pointer; }
+.zh-cand:hover { border-color: #12A56B; background: #E4F6EE; transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .pop { opacity: 1 !important; animation: none !important; transform: none !important; }
+  .float-slow, .float-mid, .lesson-node.current { animation: none !important; }
+  * { scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body class="bg-cream text-ink overflow-hidden h-screen flex flex-col font-sans antialiased">
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="fixed inset-0 z-[100] bg-cream flex items-center justify-center p-4">
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute top-[-10%] left-[-5%] w-96 h-96 rounded-full bg-brandSoft opacity-40 blur-3xl"></div>
+    <div class="absolute bottom-[-10%] right-[-5%] w-96 h-96 rounded-full bg-[#EAF5FC] opacity-50 blur-3xl"></div>
+  </div>
+  <div class="relative bg-white rounded-[28px] p-6 md:p-8 max-w-[430px] w-full shadow-2xl border border-[#E7E2DA] flex flex-col gap-5 pop max-h-[94vh] overflow-y-auto scrollbar-hide">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand to-brandDark flex items-center justify-center text-white shadow-[0_4px_0_#0C7B4F]">
+        <i class="ri-flashlight-fill text-[24px]"></i>
+      </div>
+      <div>
+        <span class="font-display font-black text-[24px] tracking-tight text-ink">Omni<span class="text-brand">Lingual</span></span>
+        <div class="text-[10px] font-bold tracking-[0.22em] text-slate2 mt-[3px]" data-i18n="tag">SPEAK THE WORLD</div>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="font-display font-black text-[26px] text-ink leading-tight" data-i18n="signupTitle">Sign up for free</h2>
+      <p class="text-[13px] text-slate2 mt-1.5" data-i18n="signupSub">Learn any language, in any language.</p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <input id="signup-name" type="text" data-i18n-ph="phName" placeholder="Your name"
+        class="w-full bg-[#FAF8F4] border-2 border-[#E7E2DA] rounded-2xl px-4 py-3 outline-none focus:border-[#A9E0C8] focus:bg-white font-semibold text-[14px] transition-colors"/>
+      <input id="signup-email" type="email" data-i18n-ph="phEmail" placeholder="Email address"
+        class="w-full bg-[#FAF8F4] border-2 border-[#E7E2DA] rounded-2xl px-4 py-3 outline-none focus:border-[#A9E0C8] focus:bg-white font-semibold text-[14px] transition-colors"/>
+      <input id="signup-pass" type="password" data-i18n-ph="phPass" placeholder="Password"
+        class="w-full bg-[#FAF8F4] border-2 border-[#E7E2DA] rounded-2xl px-4 py-3 outline-none focus:border-[#A9E0C8] focus:bg-white font-semibold text-[14px] transition-colors"/>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="flex flex-col gap-1.5">
+        <span class="text-[10px] font-extrabold tracking-[0.18em] text-slate2" data-i18n="iSpeak">I SPEAK</span>
+        <select id="signup-native" class="bg-[#FAF8F4] border-2 border-[#E7E2DA] rounded-2xl px-3 py-2.5 outline-none focus:border-[#A9E0C8] font-semibold text-[13px] cursor-pointer"></select>
+      </label>
+      <label class="flex flex-col gap-1.5">
+        <span class="text-[10px] font-extrabold tracking-[0.18em] text-brandDark" data-i18n="iLearn">I WANT TO LEARN</span>
+        <select id="signup-learning" class="bg-brandSoft border-2 border-[#A9E0C8] rounded-2xl px-3 py-2.5 outline-none focus:border-brand font-semibold text-[13px] cursor-pointer"></select>
+      </label>
+    </div>
+
+    <button onclick="signup()" class="btn-3d bg-brand text-white font-display font-black py-3.5 rounded-2xl shadow-[0_5px_0_#0C7B4F] text-[14px] tracking-[0.12em]" data-i18n="createAccount">CREATE ACCOUNT</button>
+
+    <div class="text-center text-[12px] text-slate2 font-medium">
+      <span data-i18n="haveAccount">Already have an account?</span>
+      <button onclick="login()" class="text-brandDark font-extrabold hover:underline" data-i18n="loginBtn">Log in</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-root" class="hidden flex-1 flex flex-col overflow-hidden">
+
+  <!-- TOP BAR -->
+  <header class="h-[68px] md:h-[76px] border-b border-[#E7E2DA] bg-white/85 backdrop-blur-xl sticky top-0 z-40 flex items-center px-3 md:px-6 gap-3 md:gap-6 shrink-0">
+    <div class="flex items-center gap-2.5 md:gap-3 shrink-0">
+      <div class="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-gradient-to-br from-brand to-brandDark flex items-center justify-center text-white shadow-[0_4px_0_#0C7B4F]">
+        <i class="ri-flashlight-fill text-[20px]"></i>
+      </div>
+      <div class="leading-none">
+        <span class="font-display font-black text-[21px] md:text-[23px] tracking-tight text-ink">Omni<span class="text-brand">Lingual</span></span>
+      </div>
+    </div>
+
+    <div class="flex-1 flex justify-center">
+      <button onclick="openLangModal()" class="group flex items-center gap-2.5 bg-white hover:bg-[#F6F2EC] border-2 border-[#E7E2DA] rounded-full px-3 md:px-4 py-[7px] md:py-2 transition-colors">
+        <span id="native-flag" class="text-[19px] leading-none">🇺🇸</span>
+        <i class="ri-arrow-left-right-line text-[#A8B2B6] hidden md:block text-lg"></i>
+        <span id="learning-flag" class="text-[19px] leading-none">🇪🇸</span>
+        <span id="learning-name" class="hidden lg:block font-extrabold text-[13px] text-ink">Spanish</span>
+        <i class="ri-arrow-down-s-line text-[#A8B2B6] text-lg group-hover:translate-y-[2px] transition-transform"></i>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
+      <div class="flex items-center gap-1.5 font-extrabold text-amber2">
+        <i class="ri-fire-fill text-[18px] md:text-[19px]"></i>
+        <span id="streak-count" class="text-[13px] md:text-[15px] tabular">12</span>
+      </div>
+      <div class="flex items-center gap-1.5 font-extrabold text-coral">
+        <i class="ri-heart-3-fill text-[18px] md:text-[19px]"></i>
+        <span id="hearts-top" class="text-[13px] md:text-[15px] tabular">5</span>
+      </div>
+      <div class="hidden md:flex items-center gap-1.5 font-extrabold text-sky2">
+        <i class="ri-flashlight-fill text-[19px]"></i>
+        <span id="xp-top" class="tabular">1,240</span>
+      </div>
+      <div class="hidden md:flex items-center gap-1.5 font-extrabold text-plum">
+        <i class="ri-vip-diamond-fill text-[19px]"></i>
+        <span id="gems-top" class="tabular">420</span>
+      </div>
+      <button onclick="switchView('profile')" class="ml-1 shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-brand/40">
+        <img id="header-avatar" src="https://i.pravatar.cc/120?img=32" alt="Your profile" class="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-[#E7E2DA] object-cover hover:border-brand transition-colors"/>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="hidden lg:flex w-[262px] border-r border-[#E7E2DA] bg-white flex-col p-3.5 gap-1 shrink-0 overflow-y-auto scrollbar-hide">
+      <nav class="space-y-1.5">
+        <button onclick="switchView('learn')" data-nav="learn" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-brandSoft border-2 border-[#A9E0C8] text-brandDark font-extrabold text-[13.5px] tracking-[0.09em]">
+          <i class="ri-home-5-fill text-[19px]"></i><span data-i18n="navLearn">LEARN</span>
+        </button>
+        <button onclick="switchView('practice')" data-nav="practice" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 border-transparent text-[#6B7B82] font-extrabold text-[13.5px] tracking-[0.09em] hover:bg-[#F6F2EC]">
+          <i class="ri-dumbbell-fill text-[19px]"></i><span data-i18n="navPractice">PRACTICE</span>
+        </button>
+        <button onclick="switchView('leaderboard')" data-nav="leaderboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 border-transparent text-[#6B7B82] font-extrabold text-[13.5px] tracking-[0.09em] hover:bg-[#F6F2EC]">
+          <i class="ri-trophy-fill text-[19px]"></i><span data-i18n="navLeague">LEADERBOARD</span>
+        </button>
+        <button onclick="switchView('shop')" data-nav="shop" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 border-transparent text-[#6B7B82] font-extrabold text-[13.5px] tracking-[0.09em] hover:bg-[#F6F2EC]">
+          <i class="ri-store-3-fill text-[19px]"></i><span data-i18n="navShop">SHOP</span>
+        </button>
+        <button onclick="switchView('profile')" data-nav="profile" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 border-transparent text-[#6B7B82] font-extrabold text-[13.5px] tracking-[0.09em] hover:bg-[#F6F2EC]">
+          <i class="ri-user-3-fill text-[19px]"></i><span data-i18n="navProfile">PROFILE</span>
+        </button>
+      </nav>
+
+      <div class="mt-auto rounded-3xl bg-gradient-to-br from-brandSoft to-[#F2FBF7] border border-[#CDEBDF] p-4">
+        <div class="font-display font-black text-ink text-[14px]">OmniLingual</div>
+        <div class="text-[11px] text-[#5A6B72] mt-1 leading-relaxed" data-i18n="heroBadge">40+ LANGUAGES • ONE APP</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main id="main-scroll" class="flex-1 overflow-y-auto bg-cream lg:bg-[#F7F3ED] scrollbar-hide">
+
+      <!-- LEARN VIEW -->
+      <div id="view-learn" class="view max-w-[860px] mx-auto w-full px-4 md:px-7 pt-5 md:pt-7 pb-28 lg:pb-10">
+        <section class="relative rounded-[28px] overflow-hidden border border-[#E7E2DA] shadow-soft reveal">
+          <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1600&q=80" alt="Learning" class="absolute inset-0 w-full h-full object-cover"/>
+          <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/25"></div>
+          <div class="relative p-6 md:p-9 lg:p-11">
+            <div class="inline-flex items-center gap-2 bg-white/15 border border-white/25 backdrop-blur-md rounded-full pl-2 pr-3.5 py-1.5 text-white/95 pop" style="--d:120ms">
+              <span class="w-6 h-6 rounded-full bg-amber2 flex items-center justify-center text-[11px] text-white"><i class="ri-sparkling-fill"></i></span>
+              <span class="text-[11px] font-extrabold tracking-[0.16em]" data-i18n="heroBadge">40+ LANGUAGES • ONE APP</span>
+            </div>
+            <h1 class="mt-5 text-white font-display font-black leading-[1.02] text-[34px] md:text-[50px] lg:text-[54px] max-w-[18ch]" data-i18n="heroTitle">Learn any language, in your language.</h1>
+            <p class="mt-4 text-white/85 text-[15px] md:text-[17px] leading-relaxed max-w-[52ch] reveal" style="--d:760ms" data-i18n="heroSub">Adaptive lessons, native audio and real conversations — switch your interface and target language any time.</p>
+            <div class="mt-7 flex flex-wrap items-center gap-3 reveal" style="--d:880ms">
+              <button onclick="startLesson(0, nextLessonIndex())" class="btn-3d bg-[#35D08C] text-ink font-display font-black text-[15px] px-7 py-4 rounded-2xl shadow-[0_5px_0_#1AA772] flex items-center gap-2">
+                <i class="ri-play-fill text-[18px]"></i><span data-i18n="continueLesson">CONTINUE LESSON</span>
+              </button>
+              <button onclick="openLangModal()" class="btn-3d bg-white/15 border border-white/30 text-white font-extrabold text-[14px] px-6 py-4 rounded-2xl backdrop-blur-md hover:bg-white/20">
+                <i class="ri-global-line mr-1.5"></i><span data-i18n="changeLang">Change language</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div id="units-container" class="space-y-7 mt-7"></div>
+      </div>
+
+      <!-- PRACTICE VIEW -->
+      <div id="view-practice" class="view hidden max-w-[860px] mx-auto w-full px-4 md:px-7 py-6 md:py-8 pb-28 lg:pb-10">
+        <div class="reveal">
+          <div class="inline-flex items-center gap-2 bg-brandSoft text-brandDark rounded-full px-3.5 py-1.5 text-[11px] font-extrabold tracking-[0.16em]">
+            <i class="ri-dumbbell-fill"></i><span data-i18n="practiceHub">PRACTICE HUB</span>
+          </div>
+          <h2 class="font-display font-black text-[30px] md:text-[38px] leading-tight text-ink mt-3" data-i18n="practiceTitle">Sharpen what matters most</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-7">
+          <div class="card-hover bg-white border border-[#E7E2DA] rounded-3xl p-5 reveal" style="--d:80ms">
+            <div class="w-11 h-11 rounded-2xl bg-brandSoft flex items-center justify-center text-brand text-[20px]"><i class="ri-refresh-line"></i></div>
+            <div class="font-display font-extrabold text-ink text-[17px] mt-3" data-i18n="mistakes">Mistake Review</div>
+            <div class="text-[13px] text-[#6B7B82] mt-1 leading-relaxed" data-i18n="mistakesDesc">Revisit the 14 words you got wrong this week.</div>
+            <button onclick="startPractice('mistakes')" class="btn-3d mt-4 w-full bg-brand text-white font-display font-black py-3.5 rounded-2xl shadow-[0_5px_0_#0C7B4F] text-[13px] tracking-[0.12em]" data-i18n="practiceCta">PRACTICE • +10 XP</button>
+          </div>
+
+          <div class="card-hover bg-white border border-[#E7E2DA] rounded-3xl p-5 reveal" style="--d:160ms">
+            <div class="w-11 h-11 rounded-2xl bg-[#EAF5FC] flex items-center justify-center text-sky2 text-[20px]"><i class="ri-chat-voice-line"></i></div>
+            <div class="font-display font-extrabold text-ink text-[17px] mt-3" data-i18n="pinyinTitle">Pinyin Typing (中文)</div>
+            <div class="text-[13px] text-[#6B7B82] mt-1 leading-relaxed" data-i18n="pinyinDesc">Practice the Chinese keyboard: type pinyin, pick hanzi.</div>
+            <button onclick="startChineseTyping()" class="btn-3d mt-4 w-full bg-white border-2 border-[#E7E2DA] font-display font-black py-3.5 rounded-2xl shadow-[0_5px_0_#E7E2DA] text-sky2 text-[13px] tracking-[0.12em]" data-i18n="startBtn">START</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD VIEW -->
+      <div id="view-leaderboard" class="view hidden max-w-[860px] mx-auto w-full px-4 md:px-7 py-6 md:py-8 pb-28 lg:pb-10">
+        <div class="relative rounded-[26px] overflow-hidden border border-[#E7E2DA] shadow-soft reveal">
+          <div class="absolute inset-0 bg-gradient-to-r from-sky2 via-[#1E77AD] to-[#134E74] opacity-[0.92]"></div>
+          <div class="relative p-6 md:p-8 flex items-center gap-5">
+            <div class="w-16 h-16 rounded-3xl bg-white flex items-center justify-center text-[30px] shadow-lg float-mid">🏆</div>
+            <div>
+              <div class="text-white font-display font-black text-[22px] leading-tight" data-i18n="leagueName">Sapphire League</div>
+              <div class="text-white/85 text-[13px] font-semibold" data-i18n="leagueSub">Top 10 advance to Ruby • 4 days left</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-[#E7E2DA] rounded-3xl overflow-hidden mt-5 shadow-[0_16px_40px_-32px_rgba(22,36,43,.7)] reveal" style="--d:120ms">
+          <div id="leaderboard-list"></div>
+        </div>
+      </div>
+
+      <!-- SHOP VIEW -->
+      <div id="view-shop" class="view hidden max-w-[860px] mx-auto w-full px-4 md:px-7 py-6 md:py-8 pb-28 lg:pb-10">
+        <div class="flex flex-wrap items-center gap-4 justify-between reveal">
+          <h2 class="font-display font-black text-[30px] md:text-[38px] leading-tight text-ink" data-i18n="shopTitle">Power up your learning</h2>
+          <div class="flex items-center gap-2.5 bg-white border border-[#E7E2DA] rounded-full px-5 py-2.5 font-display font-extrabold text-plum shadow-[0_8px_24px_-18px_rgba(22,36,43,.7)]">
+            <i class="ri-vip-diamond-fill text-[19px]"></i>
+            <span id="gems-shop" class="tabular">420</span>
+            <span class="text-[11px] text-[#8D9AA0] tracking-[0.14em]" data-i18n="gems">GEMS</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-7" id="shop-grid"></div>
+      </div>
+
+      <!-- PROFILE VIEW -->
+      <div id="view-profile" class="view hidden max-w-[860px] mx-auto w-full px-4 md:px-7 py-6 md:py-8 pb-28 lg:pb-10">
+        <div class="bg-white border border-[#E7E2DA] rounded-[26px] overflow-hidden shadow-[0_16px_40px_-32px_rgba(22,36,43,.7)] reveal">
+          <div class="h-[130px] md:h-[160px] relative">
+            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1500&q=80" alt="Campus" class="w-full h-full object-cover"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent"></div>
+          </div>
+          <div class="p-5 md:p-7 -mt-16 relative">
+            <div class="flex flex-wrap gap-4 items-end">
+              <img id="profile-avatar" src="https://i.pravatar.cc/200?img=32" alt="User" class="w-[104px] h-[104px] rounded-[26px] border-4 border-white object-cover shadow-card"/>
+              <div class="flex-1 min-w-[220px]">
+                <div id="profile-name" class="font-display font-black text-[25px] text-ink leading-tight">Alex Rivera</div>
+                <div id="profile-email" class="text-[13px] text-[#6B7B82] font-medium">alex@omnilingual.com</div>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="bg-brandSoft border border-[#A9E0C8] text-brandDark font-extrabold text-[11px] px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span id="profile-flag">🇪🇸</span><span id="profile-lang">Spanish</span>
+                  </span>
+                  <span class="bg-[#FFF7E8] border border-[#F3DFB6] text-[#B47B12] font-extrabold text-[11px] px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <i class="ri-fire-fill"></i><span id="profile-streak">12 day streak</span>
+                  </span>
+                </div>
+              </div>
+              <button onclick="logout()" class="btn-3d bg-coral text-white font-display font-black px-6 py-3 rounded-2xl shadow-[0_5px_0_#D85449] text-[12px] tracking-[0.14em]" data-i18n="logout">LOGOUT</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT RAIL -->
+    <aside class="hidden xl:flex w-[330px] border-l border-[#E7E2DA] bg-white flex-col p-4 gap-4 shrink-0 overflow-y-auto scrollbar-hide">
+      <div class="bg-white border border-[#E7E2DA] rounded-3xl p-4 shadow-[0_12px_34px_-30px_rgba(22,36,43,.9)]">
+        <span class="font-display font-extrabold text-ink text-[14.5px]" data-i18n="dailyQuests">Daily Quests</span>
+        <div class="mt-4 space-y-3.5">
+          <div class="flex gap-3 items-center">
+            <div class="w-10 h-10 rounded-2xl bg-brandSoft text-brand flex items-center justify-center text-[18px]"><i class="ri-flashlight-fill"></i></div>
+            <div class="flex-1">
+              <div class="font-bold text-[12.5px] text-ink" data-i18n="earnXp">Earn 20 XP</div>
+              <div class="h-[7px] bg-[#EEF1F0] rounded-full mt-1.5 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-brand to-[#2ACF8B] rounded-full" style="width:66%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative rounded-3xl overflow-hidden border border-[#E7E2DA] shadow-[0_12px_34px_-30px_rgba(22,36,43,.9)]">
+        <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80" alt="Travel" class="w-full h-[190px] object-cover"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-transparent"></div>
+        <div class="absolute bottom-0 p-4">
+          <div class="font-display font-black text-white text-[16px] leading-tight" data-i18n="travelMode">Travel Mode • 中文键盘</div>
+          <div class="text-white/75 text-[11.5px] mt-1 leading-relaxed" data-i18n="travelModeDesc">Try the built-in Chinese pinyin keyboard.</div>
+          <button onclick="startChineseTyping()" class="btn-3d mt-3 bg-white text-ink font-display font-black text-[11px] tracking-[0.14em] px-4 py-2.5 rounded-xl shadow-[0_4px_0_rgba(0,0,0,.25)]" data-i18n="tryPinyin">TRY PINYIN IME</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-[#E7E2DA] flex justify-around items-center h-[68px] z-40 px-2">
+    <button onclick="switchView('learn')" data-mnav="learn" data-icon="ri-home-5" class="flex flex-col items-center gap-1 text-brand w-[60px]">
+      <i class="ri-home-5-fill text-[21px]"></i><span class="text-[9px] font-extrabold tracking-[0.1em]" data-i18n="navLearn">LEARN</span>
+    </button>
+    <button onclick="switchView('practice')" data-mnav="practice" data-icon="ri-dumbbell" class="flex flex-col items-center gap-1 text-[#9AA8AD] w-[60px]">
+      <i class="ri-dumbbell-line text-[21px]"></i><span class="text-[9px] font-extrabold tracking-[0.1em]" data-i18n="navPractice">PRACTICE</span>
+    </button>
+    <button onclick="switchView('leaderboard')" data-mnav="leaderboard" data-icon="ri-trophy" class="flex flex-col items-center gap-1 text-[#9AA8AD] w-[60px]">
+      <i class="ri-trophy-line text-[21px]"></i><span class="text-[9px] font-extrabold tracking-[0.1em]" data-i18n="navLeague">LEAGUE</span>
+    </button>
+    <button onclick="switchView('shop')" data-mnav="shop" data-icon="ri-store-3" class="flex flex-col items-center gap-1 text-[#9AA8AD] w-[60px]">
+      <i class="ri-store-3-line text-[21px]"></i><span class="text-[9px] font-extrabold tracking-[0.1em]" data-i18n="navShop">SHOP</span>
+    </button>
+    <button onclick="switchView('profile')" data-mnav="profile" data-icon="ri-user-3" class="flex flex-col items-center gap-1 text-[#9AA8AD] w-[60px]">
+      <i class="ri-user-3-line text-[21px]"></i><span class="text-[9px] font-extrabold tracking-[0.1em]" data-i18n="mnavYou">YOU</span>
+    </button>
+  </nav>
+</div>
+
+<!-- LESSON MODAL -->
+<div id="lesson-modal" class="fixed inset-0 bg-white z-50 hidden flex-col">
+  <div class="h-[68px] md:h-[76px] flex items-center gap-3 md:gap-6 px-4 md:px-8 max-w-[1000px] mx-auto w-full shrink-0">
+    <button onclick="closeLesson()" class="w-10 h-10 rounded-full hover:bg-[#F6F2EC] flex items-center justify-center text-[#9AA8AD] text-[21px]">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="flex-1 h-[10px] md:h-[12px] bg-[#EEF1F0] rounded-full overflow-hidden">
+      <div id="lesson-progress" class="h-full bg-gradient-to-r from-brand to-[#2ACF8B] rounded-full transition-all duration-500 ease-out" style="width:0%"></div>
+    </div>
+    <div class="flex items-center gap-1.5 font-display font-extrabold text-coral">
+      <i class="ri-heart-3-fill text-[20px]"></i><span id="lesson-hearts" class="tabular">5</span>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto">
+    <div class="max-w-[820px] mx-auto w-full px-4 md:px-8 py-6 md:py-10">
+      <div id="exercise-container" class="min-h-[300px]"></div>
+    </div>
+  </div>
+
+  <div id="feedback-bar" class="hidden border-t-2 px-4 md:px-8 py-4 md:py-6 shrink-0">
+    <div class="max-w-[820px] mx-auto flex items-center gap-4">
+      <div id="feedback-icon" class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white flex items-center justify-center text-[23px] shrink-0 shadow-sm"></div>
+      <div class="flex-1 min-w-0">
+        <div id="feedback-title" class="font-display font-black text-[18px] leading-tight"></div>
+        <div id="feedback-text" class="text-[13.5px] md:text-[15px] mt-1 opacity-90"></div>
+      </div>
+      <button id="feedback-btn" onclick="nextExercise()" class="shrink-0 font-display font-black px-6 md:px-8 py-3.5 rounded-2xl text-white btn-3d shadow-[0_4px_0_rgba(0,0,0,.22)] text-[13px] tracking-[0.12em]" data-i18n="done">CONTINUE</button>
+    </div>
+  </div>
+
+  <div id="lesson-footer" class="border-t-2 border-[#EEF1F0] px-4 md:px-8 py-4 md:py-6 shrink-0 bg-white">
+    <div class="max-w-[820px] mx-auto flex items-center justify-between gap-4">
+      <button onclick="skipExercise()" class="hidden md:block font-display font-black text-[#9AA8AD] border-2 border-[#E7E2DA] rounded-2xl px-7 py-3.5 text-[12px] tracking-[0.12em] btn-3d shadow-[0_4px_0_#E7E2DA]" data-i18n="skip">SKIP</button>
+      <div class="flex-1 md:flex-none"></div>
+      <button id="check-btn" onclick="checkAnswer()" class="flex-1 md:flex-none bg-[#EEF1F0] text-[#A5B0B4] font-display font-black px-12 py-4 rounded-2xl text-[13px] tracking-[0.14em] transition-all" disabled data-i18n="check">CHECK</button>
+    </div>
+  </div>
+
+  <div id="lesson-complete" class="hidden absolute inset-0 bg-white z-10 flex-col">
+    <div class="flex-1 flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
+      <div class="w-24 h-24 rounded-[28px] bg-gradient-to-br from-amber2 to-[#EF8B23] flex items-center justify-center text-[46px] shadow-[0_8px_0_#D98914] float-slow">🏆</div>
+      <h2 class="font-display font-black text-[32px] md:text-[40px] text-ink mt-6 leading-tight" data-i18n="completeTitle">Lesson complete!</h2>
+      <p class="text-[#6B7B82] mt-2.5 max-w-[40ch] text-[15px] leading-relaxed" data-i18n="completeSub">Brilliant work — every session brings you closer to real-world fluency.</p>
+
+      <div class="flex gap-3 mt-7">
+        <div class="bg-white border-2 border-[#E7E2DA] rounded-2xl px-6 py-3">
+          <div class="font-display font-black text-[24px] text-sky2 tabular" id="complete-accuracy">—</div>
+          <div class="text-[10px] font-extrabold tracking-[0.16em] text-[#9AA8AD]" data-i18n="accuracy">Accuracy</div>
+        </div>
+        <div class="bg-white border-2 border-[#E7E2DA] rounded-2xl px-6 py-3">
+          <div class="font-display font-black text-[24px] text-brand tabular" id="complete-xp">+25</div>
+          <div class="text-[10px] font-extrabold tracking-[0.16em] text-[#9AA8AD]">XP</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 mt-8 w-full max-w-[420px]">
+        <button onclick="closeLesson()" class="flex-1 bg-white border-2 border-[#E7E2DA] font-display font-black py-4 rounded-2xl shadow-[0_5px_0_#E7E2DA] text-ink text-[13px] tracking-[0.12em] btn-3d" data-i18n="reviewLater">REVIEW LATER</button>
+        <button onclick="closeLesson();confettiCelebrate();" class="flex-1 bg-brand text-white font-display font-black py-4 rounded-2xl shadow-[0_5px_0_#0C7B4F] text-[13px] tracking-[0.12em] btn-3d flex items-center justify-center gap-2">
+          <span data-i18n="done">DONE</span> <i class="ri-arrow-right-line"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LANG MODAL -->
+<div id="lang-modal" class="fixed inset-0 bg-ink/45 backdrop-blur-md z-[60] hidden items-center justify-center p-3 md:p-6">
+  <div class="bg-white rounded-[28px] w-full max-w-[860px] max-h-[92vh] overflow-hidden flex flex-col shadow-2xl">
+    <div class="px-5 md:px-8 pt-6 md:pt-8 pb-4 border-b border-[#F0EDE8] shrink-0">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="font-display font-black text-[24px] md:text-[30px] text-ink mt-2.5 leading-tight" data-i18n="langTitle">Learn &amp; browse in any language</h3>
+          <p class="text-[13px] text-[#6B7B82] mt-1.5 max-w-[56ch]" data-i18n="langSub">Choose the language you want to learn and the language OmniLingual uses for its interface.</p>
+        </div>
+        <button onclick="closeLangModal()" class="w-10 h-10 rounded-full bg-[#F6F2EC] hover:bg-[#EDE7DF] flex items-center justify-center text-[#6B7B82]">
+          <i class="ri-close-line text-[19px]"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">
+        <label class="bg-[#FAF8F4] border-2 border-[#E7E2DA] rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span class="text-[9.5px] font-extrabold tracking-[0.18em] text-[#9AA8AD] shrink-0" data-i18n="appLang">APP LANGUAGE</span>
+          <select id="ui-lang-select" onchange="changeUILang(this.value)" class="flex-1 bg-transparent font-display font-extrabold text-ink outline-none text-[13px] cursor-pointer"></select>
+        </label>
+        <label class="bg-brandSoft border-2 border-[#A9E0C8] rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span class="text-[9.5px] font-extrabold tracking-[0.18em] text-brandDark shrink-0" data-i18n="iLearn">I WANT TO LEARN</span>
+          <select id="learning-lang-select" onchange="changeLearningLang(this.value)" class="flex-1 bg-transparent font-display font-extrabold text-ink outline-none text-[13px] cursor-pointer"></select>
+        </label>
+      </div>
+
+      <div class="mt-3 relative">
+        <i class="ri-search-line absolute left-4 top-1/2 -translate-y-1/2 text-[#9AA8AD] text-[17px]"></i>
+        <input id="lang-search" type="text" oninput="renderLangGrid(this.value)" data-i18n-ph="searchPh" placeholder="Search 40+ languages…"
+          class="w-full bg-[#FAF8F4] border-2 border-[#E7E2DA] rounded-2xl pl-11 pr-4 py-3 outline-none focus:border-[#A9E0C8] focus:bg-white font-semibold text-[13.5px] transition-colors"/>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-[#FCFAF7]">
+      <div id="lang-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+    </div>
+
+    <div class="p-4 md:p-6 border-t border-[#F0EDE8] bg-white flex items-center justify-between gap-4 shrink-0">
+      <div class="text-[11px] text-[#6B7B82] max-w-[52ch]">
+        <span class="font-extrabold text-ink" data-i18n="tipLabel">Tip:</span>
+        <span data-i18n="tipText">Writing in 中文 opens a built-in pinyin keyboard.</span>
+      </div>
+      <button onclick="closeLangModal()" class="bg-brand text-white font-display font-black px-7 py-3.5 rounded-2xl shadow-[0_5px_0_#0C7B4F] text-[12px] tracking-[0.14em] btn-3d shrink-0" data-i18n="doneBtn">DONE</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="fixed bottom-[84px] lg:bottom-8 left-1/2 -translate-x-1/2 z-[80] flex flex-col gap-2 items-center pointer-events-none px-4 w-full max-w-[480px]"></div>
+
+<script>
+/* ============================================================
+   OmniLingual — multilingual language learning app
+   ============================================================ */
+
+const LANGUAGES = [
+  {code:'en',name:'English',native:'English',flag:'🇺🇸'},   {code:'es',name:'Spanish',native:'Español',flag:'🇪🇸'},
+  {code:'fr',name:'French',native:'Français',flag:'🇫🇷'},   {code:'de',name:'German',native:'Deutsch',flag:'🇩🇪'},
+  {code:'it',name:'Italian',native:'Italiano',flag:'🇮🇹'},  {code:'pt',name:'Portuguese',native:'Português',flag:'🇧🇷'},
+  {code:'ja',name:'Japanese',native:'日本語',flag:'🇯🇵'},    {code:'ko',name:'Korean',native:'한국어',flag:'🇰🇷'},
+  {code:'zh',name:'Chinese',native:'中文',flag:'🇨🇳'},       {code:'ar',name:'Arabic',native:'العربية',flag:'🇸🇦'},
+  {code:'hi',name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},       {code:'ru',name:'Russian',native:'Русский',flag:'🇷🇺'}
+];
+
+/* ---------- UI TRANSLATIONS (interface in any language) ---------- */
+const I18N = {
+en: {
+  tag:'SPEAK THE WORLD', signupTitle:'Sign up for free', signupSub:'Learn any language, in any language.',
+  phName:'Your name', phEmail:'Email address', phPass:'Password', iSpeak:'I SPEAK', iLearn:'I WANT TO LEARN',
+  createAccount:'CREATE ACCOUNT', haveAccount:'Already have an account?', loginBtn:'Log in', searchPh:'Search 40+ languages…',
+  navLearn:'LEARN', navPractice:'PRACTICE', navLeague:'LEADERBOARD', navShop:'SHOP', navProfile:'PROFILE', mnavYou:'YOU', you:'You',
+  heroBadge:'40+ LANGUAGES • ONE APP', heroTitle:'Learn any language, in your language.',
+  heroSub:'Adaptive lessons, native audio and real conversations — switch your interface and target language any time.',
+  continueLesson:'CONTINUE LESSON', changeLang:'Change language',
+  practiceHub:'PRACTICE HUB', practiceTitle:'Sharpen what matters most', mistakes:'Mistake Review',
+  mistakesDesc:'Revisit the 14 words you got wrong this week.', practiceCta:'PRACTICE • +10 XP',
+  pinyinTitle:'Pinyin Typing (中文)', pinyinDesc:'Practice the Chinese keyboard: type pinyin, pick hanzi.', startBtn:'START',
+  leagueName:'Sapphire League', leagueSub:'Top 10 advance to Ruby • 4 days left',
+  shopTitle:'Power up your learning', gems:'GEMS', itemHearts:'Hearts Refill', itemHeartsDesc:'Restore to 5 hearts instantly.',
+  itemFreeze:'Streak Freeze', itemFreezeDesc:'Protect your streak for 1 day.', itemBoost:'XP Boost', itemBoostDesc:'Double XP for 30 minutes.',
+  dayStreak:'{n} day streak', logout:'LOGOUT', dailyQuests:'Daily Quests', earnXp:'Earn 20 XP',
+  travelMode:'Travel Mode • 中文键盘', travelModeDesc:'Try the built-in Chinese pinyin keyboard.', tryPinyin:'TRY PINYIN IME',
+  completeTitle:'Lesson complete!', completeSub:'Brilliant work — every session brings you closer to real-world fluency.',
+  reviewLater:'REVIEW LATER', done:'DONE', accuracy:'Accuracy',
+  langTitle:'Learn & browse in any language',
+  langSub:'Choose the language you want to learn and the language OmniLingual uses for its interface.',
+  appLang:'APP LANGUAGE', tipLabel:'Tip:', tipText:'Writing in 中文 opens a built-in pinyin keyboard.', doneBtn:'DONE',
+  check:'CHECK', skip:'SKIP', correctTitle:'Correct!', correctSub:'Great job.', correctAnswer:'Correct answer:',
+  ofLabel:'OF', practiceTag:'PRACTICE', translateSentence:'Translate this sentence', typeHere:'Type here...',
+  pinyinIme:'Pinyin IME • Candidates', onScreenKb:'On-Screen Chinese Keyboard', hint:'Hint',
+  listenInstruction:'Tap to listen and type what you hear', startHere:'START HERE',
+  typePinyinPrompt:'Type pinyin (e.g., "nihao") to see Chinese characters',
+  noMatch:'No match for', tryWords:'Try "nihao", "xiexie", etc.',
+  badgeLearning:'LEARNING', badgeApp:'APP',
+  toastWelcome:'Welcome to OmniLingual, {n}! 🎉', toastBack:'Welcome back! 👋', toastNoHearts:'Out of hearts! Refill in the shop.',
+  toastNoGems:'Not enough gems! 💎', toastBought:'Purchase successful! 🎉', toastUi:'App language updated 🌐',
+  toastZh:'⌨️ Chinese keyboard ready — type pinyin like "nihao"'
+},
+es: {
+  tag:'HABLA AL MUNDO', signupTitle:'Regístrate gratis', signupSub:'Aprende cualquier idioma, en cualquier idioma.',
+  phName:'Tu nombre', phEmail:'Correo electrónico', phPass:'Contraseña', iSpeak:'YO HABLO', iLearn:'QUIERO APRENDER',
+  createAccount:'CREAR CUENTA', haveAccount:'¿Ya tienes una cuenta?', loginBtn:'Iniciar sesión', searchPh:'Busca entre más de 40 idiomas…',
+  navLearn:'APRENDER', navPractice:'PRÁCTICA', navLeague:'CLASIFICACIÓN', navShop:'TIENDA', navProfile:'PERFIL', mnavYou:'TÚ', you:'Tú',
+  heroBadge:'MÁS DE 40 IDIOMAS • UNA APP', heroTitle:'Aprende cualquier idioma, en tu idioma.',
+  heroSub:'Lecciones adaptativas, audio nativo y conversaciones reales: cambia la interfaz y el idioma que estudias cuando quieras.',
+  continueLesson:'CONTINUAR LECCIÓN', changeLang:'Cambiar idioma',
+  practiceHub:'CENTRO DE PRÁCTICA', practiceTitle:'Mejora lo que más importa', mistakes:'Repaso de errores',
+  mistakesDesc:'Repasa las 14 palabras que fallaste esta semana.', practiceCta:'PRACTICAR • +10 XP',
+  pinyinTitle:'Escritura pinyin (中文)', pinyinDesc:'Practica el teclado chino: escribe pinyin y elige el hanzi.', startBtn:'EMPEZAR',
+  leagueName:'Liga Zafiro', leagueSub:'Los 10 mejores suben a Rubí • quedan 4 días',
+  shopTitle:'Impulsa tu aprendizaje', gems:'GEMAS', itemHearts:'Recarga de corazones', itemHeartsDesc:'Recupera 5 corazones al instante.',
+  itemFreeze:'Congelador de racha', itemFreezeDesc:'Protege tu racha durante 1 día.', itemBoost:'Impulso de XP', itemBoostDesc:'XP doble durante 30 minutos.',
+  dayStreak:'{n} días de racha', logout:'CERRAR SESIÓN', dailyQuests:'Misiones diarias', earnXp:'Gana 20 XP',
+  travelMode:'Modo viaje • 中文键盘', travelModeDesc:'Prueba el teclado pinyin chino integrado.', tryPinyin:'PROBAR IME PINYIN',
+  completeTitle:'¡Lección completada!', completeSub:'Excelente trabajo: cada sesión te acerca a la fluidez real.',
+  reviewLater:'REVISAR LUEGO', done:'LISTO', accuracy:'Precisión',
+  langTitle:'Aprende y navega en cualquier idioma',
+  langSub:'Elige el idioma que quieres aprender y el idioma que OmniLingual usa en su interfaz.',
+  appLang:'IDIOMA DE LA APP', tipLabel:'Consejo:', tipText:'Escribir en 中文 abre un teclado pinyin integrado.', doneBtn:'LISTO',
+  check:'COMPROBAR', skip:'SALTAR', correctTitle:'¡Correcto!', correctSub:'¡Buen trabajo!', correctAnswer:'Respuesta correcta:',
+  ofLabel:'DE', practiceTag:'PRÁCTICA', translateSentence:'Traduce esta frase', typeHere:'Escribe aquí...',
+  pinyinIme:'IME Pinyin • Candidatos', onScreenKb:'Teclado chino en pantalla', hint:'Pista',
+  listenInstruction:'Toca para escuchar y escribe lo que oigas', startHere:'EMPIEZA AQUÍ',
+  typePinyinPrompt:'Escribe pinyin (p. ej. "nihao") para ver caracteres chinos',
+  noMatch:'Sin resultados para', tryWords:'Prueba "nihao", "xiexie", etc.',
+  badgeLearning:'APRENDIENDO', badgeApp:'APP',
+  toastWelcome:'¡Bienvenido a OmniLingual, {n}! 🎉', toastBack:'¡Bienvenido de nuevo! 👋', toastNoHearts:'¡Sin corazones! Recarga en la tienda.',
+  toastNoGems:'¡No tienes suficientes gemas! 💎', toastBought:'¡Compra realizada! 🎉', toastUi:'Idioma de la app actualizado 🌐',
+  toastZh:'⌨️ Teclado chino listo: escribe pinyin como "nihao"'
+},
+fr: {
+  tag:'PARLEZ LE MONDE', signupTitle:'Inscrivez-vous gratuitement', signupSub:'Apprenez n’importe quelle langue, dans n’importe quelle langue.',
+  phName:'Votre nom', phEmail:'Adresse e-mail', phPass:'Mot de passe', iSpeak:'JE PARLE', iLearn:'JE VEUX APPRENDRE',
+  createAccount:'CRÉER UN COMPTE', haveAccount:'Vous avez déjà un compte ?', loginBtn:'Se connecter', searchPh:'Rechercher parmi plus de 40 langues…',
+  navLearn:'APPRENDRE', navPractice:'ENTRAÎNEMENT', navLeague:'CLASSEMENT', navShop:'BOUTIQUE', navProfile:'PROFIL', mnavYou:'VOUS', you:'Vous',
+  heroBadge:'PLUS DE 40 LANGUES • UNE APP', heroTitle:'Apprenez n’importe quelle langue, dans votre langue.',
+  heroSub:'Leçons adaptatives, audio natif et vraies conversations — changez d’interface et de langue cible à tout moment.',
+  continueLesson:'CONTINUER LA LEÇON', changeLang:'Changer de langue',
+  practiceHub:'ESPACE ENTRAÎNEMENT', practiceTitle:'Renforcez l’essentiel', mistakes:'Révision des erreurs',
+  mistakesDesc:'Revenez sur les 14 mots ratés cette semaine.', practiceCta:'S’ENTRAÎNER • +10 XP',
+  pinyinTitle:'Saisie pinyin (中文)', pinyinDesc:'Entraînez-vous au clavier chinois : tapez le pinyin, choisissez le hanzi.', startBtn:'DÉMARRER',
+  leagueName:'Ligue Saphir', leagueSub:'Les 10 premiers passent en Rubis • 4 jours restants',
+  shopTitle:'Boostez votre apprentissage', gems:'GEMMES', itemHearts:'Recharge de cœurs', itemHeartsDesc:'Redonne 5 cœurs instantanément.',
+  itemFreeze:'Gel de série', itemFreezeDesc:'Protège votre série pendant 1 jour.', itemBoost:'Boost d’XP', itemBoostDesc:'XP doublés pendant 30 minutes.',
+  dayStreak:'{n} jours de série', logout:'DÉCONNEXION', dailyQuests:'Quêtes du jour', earnXp:'Gagnez 20 XP',
+  travelMode:'Mode voyage • 中文键盘', travelModeDesc:'Essayez le clavier pinyin chinois intégré.', tryPinyin:'ESSAYER L’IME PINYIN',
+  completeTitle:'Leçon terminée !', completeSub:'Excellent travail — chaque session vous rapproche de la fluidité réelle.',
+  reviewLater:'RÉVISER PLUS TARD', done:'TERMINÉ', accuracy:'Précision',
+  langTitle:'Apprenez et naviguez dans n’importe quelle langue',
+  langSub:'Choisissez la langue à apprendre et la langue utilisée par l’interface d’OmniLingual.',
+  appLang:'LANGUE DE L’APP', tipLabel:'Astuce :', tipText:'Écrire en 中文 ouvre un clavier pinyin intégré.', doneBtn:'TERMINÉ',
+  check:'VÉRIFIER', skip:'PASSER', correctTitle:'Correct !', correctSub:'Bravo.', correctAnswer:'Bonne réponse :',
+  ofLabel:'SUR', practiceTag:'ENTRAÎNEMENT', translateSentence:'Traduisez cette phrase', typeHere:'Écrivez ici...',
+  pinyinIme:'IME Pinyin • Suggestions', onScreenKb:'Clavier chinois à l’écran', hint:'Indice',
+  listenInstruction:'Touchez pour écouter et tapez ce que vous entendez', startHere:'COMMENCEZ ICI',
+  typePinyinPrompt:'Tapez du pinyin (ex. « nihao ») pour voir les caractères chinois',
+  noMatch:'Aucun résultat pour', tryWords:'Essayez « nihao », « xiexie », etc.',
+  badgeLearning:'APPRENTISSAGE', badgeApp:'APP',
+  toastWelcome:'Bienvenue sur OmniLingual, {n} ! 🎉', toastBack:'Content de vous revoir ! 👋', toastNoHearts:'Plus de cœurs ! Rechargez dans la boutique.',
+  toastNoGems:'Pas assez de gemmes ! 💎', toastBought:'Achat réussi ! 🎉', toastUi:'Langue de l’app mise à jour 🌐',
+  toastZh:'⌨️ Clavier chinois prêt — tapez le pinyin comme « nihao »'
+},
+de: {
+  tag:'SPRICH DIE WELT', signupTitle:'Kostenlos registrieren', signupSub:'Lerne jede Sprache – in jeder Sprache.',
+  phName:'Dein Name', phEmail:'E-Mail-Adresse', phPass:'Passwort', iSpeak:'ICH SPRECHE', iLearn:'ICH MÖCHTE LERNEN',
+  createAccount:'KONTO ERSTELLEN', haveAccount:'Schon ein Konto?', loginBtn:'Anmelden', searchPh:'Über 40 Sprachen durchsuchen…',
+  navLearn:'LERNEN', navPractice:'ÜBEN', navLeague:'RANGLISTE', navShop:'SHOP', navProfile:'PROFIL', mnavYou:'DU', you:'Du',
+  heroBadge:'ÜBER 40 SPRACHEN • EINE APP', heroTitle:'Lerne jede Sprache – in deiner Sprache.',
+  heroSub:'Adaptive Lektionen, Muttersprachler-Audio und echte Gespräche – wechsle Oberfläche und Zielsprache jederzeit.',
+  continueLesson:'LEKTION FORTSETZEN', changeLang:'Sprache ändern',
+  practiceHub:'ÜBUNGSZENTRUM', practiceTitle:'Stärke, was zählt', mistakes:'Fehler-Wiederholung',
+  mistakesDesc:'Wiederhole die 14 Wörter, die du diese Woche falsch hattest.', practiceCta:'ÜBEN • +10 XP',
+  pinyinTitle:'Pinyin-Tippen (中文)', pinyinDesc:'Übe die chinesische Tastatur: Pinyin tippen, Hanzi wählen.', startBtn:'START',
+  leagueName:'Saphirliga', leagueSub:'Top 10 steigen in Rubin auf • 4 Tage übrig',
+  shopTitle:'Mehr Power fürs Lernen', gems:'EDELSTEINE', itemHearts:'Herzen auffüllen', itemHeartsDesc:'Sofort wieder 5 Herzen.',
+  itemFreeze:'Serien-Frost', itemFreezeDesc:'Schützt deine Serie für 1 Tag.', itemBoost:'XP-Boost', itemBoostDesc:'Doppelte XP für 30 Minuten.',
+  dayStreak:'{n} Tage Serie', logout:'ABMELDEN', dailyQuests:'Tagesaufgaben', earnXp:'Verdiene 20 XP',
+  travelMode:'Reisemodus • 中文键盘', travelModeDesc:'Probiere die eingebaute chinesische Pinyin-Tastatur.', tryPinyin:'PINYIN-IME TESTEN',
+  completeTitle:'Lektion abgeschlossen!', completeSub:'Großartig – jede Einheit bringt dich näher an echte Sprachpraxis.',
+  reviewLater:'SPÄTER WIEDERHOLEN', done:'FERTIG', accuracy:'Genauigkeit',
+  langTitle:'In jeder Sprache lernen und stöbern',
+  langSub:'Wähle die Sprache, die du lernen willst, und die Sprache der OmniLingual-Oberfläche.',
+  appLang:'APP-SPRACHE', tipLabel:'Tipp:', tipText:'Schreiben in 中文 öffnet eine integrierte Pinyin-Tastatur.', doneBtn:'FERTIG',
+  check:'PRÜFEN', skip:'ÜBERSPRINGEN', correctTitle:'Richtig!', correctSub:'Super gemacht.', correctAnswer:'Richtige Antwort:',
+  ofLabel:'VON', practiceTag:'ÜBUNG', translateSentence:'Übersetze diesen Satz', typeHere:'Hier tippen...',
+  pinyinIme:'Pinyin-IME • Vorschläge', onScreenKb:'Chinesische Bildschirmtastatur', hint:'Tipp',
+  listenInstruction:'Tippen zum Anhören und schreibe, was du hörst', startHere:'HIER STARTEN',
+  typePinyinPrompt:'Pinyin tippen (z. B. „nihao“) für chinesische Zeichen',
+  noMatch:'Keine Treffer für', tryWords:'Versuche „nihao“, „xiexie“ usw.',
+  badgeLearning:'LERNEN', badgeApp:'APP',
+  toastWelcome:'Willkommen bei OmniLingual, {n}! 🎉', toastBack:'Willkommen zurück! 👋', toastNoHearts:'Keine Herzen mehr! Im Shop auffüllen.',
+  toastNoGems:'Nicht genug Edelsteine! 💎', toastBought:'Kauf erfolgreich! 🎉', toastUi:'App-Sprache aktualisiert 🌐',
+  toastZh:'⌨️ Chinesische Tastatur bereit – tippe Pinyin wie „nihao“'
+},
+it: {
+  tag:'PARLA IL MONDO', signupTitle:'Registrati gratis', signupSub:'Impara qualsiasi lingua, in qualsiasi lingua.',
+  phName:'Il tuo nome', phEmail:'Indirizzo email', phPass:'Password', iSpeak:'IO PARLO', iLearn:'VOGLIO IMPARARE',
+  createAccount:'CREA ACCOUNT', haveAccount:'Hai già un account?', loginBtn:'Accedi', searchPh:'Cerca tra oltre 40 lingue…',
+  navLearn:'IMPARA', navPractice:'ALLENAMENTO', navLeague:'CLASSIFICA', navShop:'NEGOZIO', navProfile:'PROFILO', mnavYou:'TU', you:'Tu',
+  heroBadge:'OLTRE 40 LINGUE • UNA APP', heroTitle:'Impara qualsiasi lingua, nella tua lingua.',
+  heroSub:'Lezioni adattive, audio madrelingua e conversazioni reali — cambia interfaccia e lingua di studio quando vuoi.',
+  continueLesson:'CONTINUA LEZIONE', changeLang:'Cambia lingua',
+  practiceHub:'CENTRO ALLENAMENTO', practiceTitle:'Rinforza ciò che conta', mistakes:'Ripasso errori',
+  mistakesDesc:'Rivedi le 14 parole sbagliate questa settimana.', practiceCta:'ALLENATI • +10 XP',
+  pinyinTitle:'Digitazione pinyin (中文)', pinyinDesc:'Allenati con la tastiera cinese: scrivi il pinyin, scegli l’hanzi.', startBtn:'INIZIA',
+  leagueName:'Lega Zaffiro', leagueSub:'I primi 10 passano a Rubino • 4 giorni rimasti',
+  shopTitle:'Dai energia al tuo studio', gems:'GEMME', itemHearts:'Ricarica cuori', itemHeartsDesc:'Riporta subito a 5 cuori.',
+  itemFreeze:'Blocco serie', itemFreezeDesc:'Protegge la tua serie per 1 giorno.', itemBoost:'Boost XP', itemBoostDesc:'XP doppi per 30 minuti.',
+  dayStreak:'{n} giorni di serie', logout:'ESCI', dailyQuests:'Missioni giornaliere', earnXp:'Guadagna 20 XP',
+  travelMode:'Modalità viaggio • 中文键盘', travelModeDesc:'Prova la tastiera pinyin cinese integrata.', tryPinyin:'PROVA IME PINYIN',
+  completeTitle:'Lezione completata!', completeSub:'Ottimo lavoro — ogni sessione ti avvicina alla vera fluidità.',
+  reviewLater:'RIPASSA DOPO', done:'FATTO', accuracy:'Precisione',
+  langTitle:'Impara e naviga in qualsiasi lingua',
+  langSub:'Scegli la lingua da imparare e la lingua dell’interfaccia di OmniLingual.',
+  appLang:'LINGUA APP', tipLabel:'Suggerimento:', tipText:'Scrivere in 中文 apre una tastiera pinyin integrata.', doneBtn:'FATTO',
+  check:'CONTROLLA', skip:'SALTA', correctTitle:'Corretto!', correctSub:'Ottimo lavoro.', correctAnswer:'Risposta corretta:',
+  ofLabel:'DI', practiceTag:'ALLENAMENTO', translateSentence:'Traduci questa frase', typeHere:'Scrivi qui...',
+  pinyinIme:'IME Pinyin • Candidati', onScreenKb:'Tastiera cinese a schermo', hint:'Suggerimento',
+  listenInstruction:'Tocca per ascoltare e scrivi ciò che senti', startHere:'INIZIA QUI',
+  typePinyinPrompt:'Scrivi il pinyin (es. «nihao») per vedere i caratteri cinesi',
+  noMatch:'Nessun risultato per', tryWords:'Prova «nihao», «xiexie», ecc.',
+  badgeLearning:'STUDIO', badgeApp:'APP',
+  toastWelcome:'Benvenuto su OmniLingual, {n}! 🎉', toastBack:'Bentornato! 👋', toastNoHearts:'Cuori esauriti! Ricarica nel negozio.',
+  toastNoGems:'Gemme insufficienti! 💎', toastBought:'Acquisto riuscito! 🎉', toastUi:'Lingua dell’app aggiornata 🌐',
+  toastZh:'⌨️ Tastiera cinese pronta — scrivi il pinyin come «nihao»'
+},
+pt: {
+  tag:'FALE O MUNDO', signupTitle:'Cadastre-se grátis', signupSub:'Aprenda qualquer idioma, em qualquer idioma.',
+  phName:'Seu nome', phEmail:'E-mail', phPass:'Senha', iSpeak:'EU FALO', iLearn:'QUERO APRENDER',
+  createAccount:'CRIAR CONTA', haveAccount:'Já tem uma conta?', loginBtn:'Entrar', searchPh:'Buscar entre mais de 40 idiomas…',
+  navLearn:'APRENDER', navPractice:'PRATICAR', navLeague:'RANKING', navShop:'LOJA', navProfile:'PERFIL', mnavYou:'VOCÊ', you:'Você',
+  heroBadge:'MAIS DE 40 IDIOMAS • UM APP', heroTitle:'Aprenda qualquer idioma, no seu idioma.',
+  heroSub:'Lições adaptativas, áudio nativo e conversas reais — mude a interface e o idioma de estudo quando quiser.',
+  continueLesson:'CONTINUAR LIÇÃO', changeLang:'Mudar idioma',
+  practiceHub:'CENTRAL DE PRÁTICA', practiceTitle:'Reforce o que mais importa', mistakes:'Revisão de erros',
+  mistakesDesc:'Revise as 14 palavras que você errou nesta semana.', practiceCta:'PRATICAR • +10 XP',
+  pinyinTitle:'Digitação pinyin (中文)', pinyinDesc:'Pratique o teclado chinês: digite pinyin e escolha o hanzi.', startBtn:'COMEÇAR',
+  leagueName:'Liga Safira', leagueSub:'Os 10 primeiros sobem para Rubi • faltam 4 dias',
+  shopTitle:'Turbine seu aprendizado', gems:'GEMAS', itemHearts:'Recarga de corações', itemHeartsDesc:'Volte para 5 corações na hora.',
+  itemFreeze:'Congelar sequência', itemFreezeDesc:'Protege sua sequência por 1 dia.', itemBoost:'Impulso de XP', itemBoostDesc:'XP em dobro por 30 minutos.',
+  dayStreak:'{n} dias de sequência', logout:'SAIR', dailyQuests:'Missões diárias', earnXp:'Ganhe 20 XP',
+  travelMode:'Modo viagem • 中文键盘', travelModeDesc:'Experimente o teclado pinyin chinês integrado.', tryPinyin:'TESTAR IME PINYIN',
+  completeTitle:'Lição concluída!', completeSub:'Excelente — cada sessão te deixa mais perto da fluência real.',
+  reviewLater:'REVISAR DEPOIS', done:'CONCLUIR', accuracy:'Precisão',
+  langTitle:'Aprenda e navegue em qualquer idioma',
+  langSub:'Escolha o idioma que quer aprender e o idioma da interface do OmniLingual.',
+  appLang:'IDIOMA DO APP', tipLabel:'Dica:', tipText:'Escrever em 中文 abre um teclado pinyin integrado.', doneBtn:'CONCLUIR',
+  check:'VERIFICAR', skip:'PULAR', correctTitle:'Correto!', correctSub:'Muito bem.', correctAnswer:'Resposta correta:',
+  ofLabel:'DE', practiceTag:'PRÁTICA', translateSentence:'Traduza esta frase', typeHere:'Digite aqui...',
+  pinyinIme:'IME Pinyin • Candidatos', onScreenKb:'Teclado chinês na tela', hint:'Dica',
+  listenInstruction:'Toque para ouvir e digite o que escutar', startHere:'COMECE AQUI',
+  typePinyinPrompt:'Digite pinyin (ex.: "nihao") para ver caracteres chineses',
+  noMatch:'Nada encontrado para', tryWords:'Tente "nihao", "xiexie" etc.',
+  badgeLearning:'APRENDENDO', badgeApp:'APP',
+  toastWelcome:'Bem-vindo ao OmniLingual, {n}! 🎉', toastBack:'Bem-vindo de volta! 👋', toastNoHearts:'Sem corações! Recarregue na loja.',
+  toastNoGems:'Gemas insuficientes! 💎', toastBought:'Compra concluída! 🎉', toastUi:'Idioma do app atualizado 🌐',
+  toastZh:'⌨️ Teclado chinês pronto — digite pinyin como "nihao"'
+},
+ja: {
+  tag:'世界を話そう', signupTitle:'無料で登録', signupSub:'どんな言語も、どの言語でも学べます。',
+  phName:'お名前', phEmail:'メールアドレス', phPass:'パスワード', iSpeak:'話せる言語', iLearn:'学びたい言語',
+  createAccount:'アカウント作成', haveAccount:'すでにアカウントをお持ちですか？', loginBtn:'ログイン', searchPh:'40以上の言語を検索…',
+  navLearn:'学習', navPractice:'練習', navLeague:'ランキング', navShop:'ショップ', navProfile:'プロフィール', mnavYou:'あなた', you:'あなた',
+  heroBadge:'40以上の言語 • ひとつのアプリ', heroTitle:'どんな言語も、あなたの言語で学べる。',
+  heroSub:'適応型レッスン、ネイティブ音声、本物の会話 — インターフェースも学習言語もいつでも切り替え。',
+  continueLesson:'レッスンを続ける', changeLang:'言語を変更',
+  practiceHub:'練習ハブ', practiceTitle:'大切なところを磨こう', mistakes:'間違いの復習',
+  mistakesDesc:'今週間違えた14語を復習しましょう。', practiceCta:'練習する • +10 XP',
+  pinyinTitle:'ピンイン入力（中文）', pinyinDesc:'中国語キーボードの練習：ピンインを入力して漢字を選択。', startBtn:'開始',
+  leagueName:'サファイアリーグ', leagueSub:'上位10名がルビーへ • 残り4日',
+  shopTitle:'学習をもっとパワーアップ', gems:'ジェム', itemHearts:'ハート補充', itemHeartsDesc:'ハートをすぐに5つに戻します。',
+  itemFreeze:'連続記録フリーズ', itemFreezeDesc:'1日分の連続記録を守ります。', itemBoost:'XPブースト', itemBoostDesc:'30分間XPが2倍。',
+  dayStreak:'{n}日連続', logout:'ログアウト', dailyQuests:'デイリーミッション', earnXp:'20 XPを獲得',
+  travelMode:'旅行モード • 中文键盘', travelModeDesc:'内蔵の中国語ピンインキーボードを試そう。', tryPinyin:'ピンインIMEを試す',
+  completeTitle:'レッスン完了！', completeSub:'素晴らしい — 毎回の学習が本物の会話力に近づきます。',
+  reviewLater:'あとで復習', done:'完了', accuracy:'正答率',
+  langTitle:'どの言語でも学んで、使える',
+  langSub:'学びたい言語と、OmniLingual のインターフェース言語を選べます。',
+  appLang:'アプリの言語', tipLabel:'ヒント：', tipText:'中文で入力すると、内蔵のピンインキーボードが開きます。', doneBtn:'完了',
+  check:'確認', skip:'スキップ', correctTitle:'正解！', correctSub:'よくできました。', correctAnswer:'正解：',
+  ofLabel:'／', practiceTag:'練習', translateSentence:'この文を翻訳しましょう', typeHere:'ここに入力...',
+  pinyinIme:'ピンインIME • 候補', onScreenKb:'画面上の中国語キーボード', hint:'ヒント',
+  listenInstruction:'タップして聞き、聞こえたとおりに入力', startHere:'ここから',
+  typePinyinPrompt:'ピンイン（例："nihao"）を入力すると漢字が表示されます',
+  noMatch:'一致なし：', tryWords:'「nihao」「xiexie」などを試してください',
+  badgeLearning:'学習中', badgeApp:'アプリ',
+  toastWelcome:'OmniLingual へようこそ、{n}さん！🎉', toastBack:'おかえりなさい！👋', toastNoHearts:'ハートがありません！ショップで補充しましょう。',
+  toastNoGems:'ジェムが足りません！💎', toastBought:'購入しました！🎉', toastUi:'アプリの言語を更新しました 🌐',
+  toastZh:'⌨️ 中国語キーボード準備完了 —「nihao」のように入力'
+},
+ko: {
+  tag:'세상을 말하세요', signupTitle:'무료로 가입하기', signupSub:'어떤 언어든, 어떤 언어로든 배우세요.',
+  phName:'이름', phEmail:'이메일 주소', phPass:'비밀번호', iSpeak:'내 언어', iLearn:'배우고 싶은 언어',
+  createAccount:'계정 만들기', haveAccount:'이미 계정이 있나요?', loginBtn:'로그인', searchPh:'40개 이상의 언어 검색…',
+  navLearn:'학습', navPractice:'연습', navLeague:'리더보드', navShop:'상점', navProfile:'프로필', mnavYou:'나', you:'나',
+  heroBadge:'40개 이상의 언어 • 하나의 앱', heroTitle:'어떤 언어든, 내 언어로 배우세요.',
+  heroSub:'맞춤형 레슨, 원어민 오디오, 실제 대화 — 인터페이스와 학습 언어를 언제든 바꿀 수 있어요.',
+  continueLesson:'레슨 계속하기', changeLang:'언어 변경',
+  practiceHub:'연습 허브', practiceTitle:'가장 중요한 것을 다듬으세요', mistakes:'오답 복습',
+  mistakesDesc:'이번 주에 틀린 14개 단어를 다시 보세요.', practiceCta:'연습하기 • +10 XP',
+  pinyinTitle:'핀인 입력 (中文)', pinyinDesc:'중국어 키보드 연습: 병음을 입력하고 한자를 고르세요.', startBtn:'시작',
+  leagueName:'사파이어 리그', leagueSub:'상위 10명은 루비로 • 4일 남음',
+  shopTitle:'학습에 힘을 더하세요', gems:'보석', itemHearts:'하트 충전', itemHeartsDesc:'하트를 즉시 5개로 회복합니다.',
+  itemFreeze:'연속 학습 보호', itemFreezeDesc:'연속 기록을 1일 보호합니다.', itemBoost:'XP 부스트', itemBoostDesc:'30분 동안 XP 두 배.',
+  dayStreak:'{n}일 연속', logout:'로그아웃', dailyQuests:'일일 퀘스트', earnXp:'20 XP 획득',
+  travelMode:'여행 모드 • 中文键盘', travelModeDesc:'내장된 중국어 병음 키보드를 사용해 보세요.', tryPinyin:'병음 IME 사용해보기',
+  completeTitle:'레슨 완료!', completeSub:'훌륭해요 — 매 세션이 실제 회화 실력에 가까워지게 합니다.',
+  reviewLater:'나중에 복습', done:'완료', accuracy:'정확도',
+  langTitle:'어떤 언어로든 배우고 사용하세요',
+  langSub:'배우고 싶은 언어와 OmniLingual 인터페이스 언어를 선택하세요.',
+  appLang:'앱 언어', tipLabel:'팁:', tipText:'中文로 입력하면 내장 병음 키보드가 열립니다.', doneBtn:'완료',
+  check:'확인', skip:'건너뛰기', correctTitle:'정답!', correctSub:'잘했어요.', correctAnswer:'정답:',
+  ofLabel:'/', practiceTag:'연습', translateSentence:'이 문장을 번역하세요', typeHere:'여기에 입력...',
+  pinyinIme:'병음 IME • 후보', onScreenKb:'화면 중국어 키보드', hint:'힌트',
+  listenInstruction:'탭해서 듣고 들리는 대로 입력하세요', startHere:'여기서 시작',
+  typePinyinPrompt:'병음(예: "nihao")을 입력하면 한자가 표시됩니다',
+  noMatch:'일치 항목 없음:', tryWords:'"nihao", "xiexie" 등을 시도해 보세요',
+  badgeLearning:'학습 중', badgeApp:'앱',
+  toastWelcome:'OmniLingual에 오신 것을 환영합니다, {n}님! 🎉', toastBack:'다시 오신 것을 환영해요! 👋', toastNoHearts:'하트가 없어요! 상점에서 충전하세요.',
+  toastNoGems:'보석이 부족해요! 💎', toastBought:'구매 완료! 🎉', toastUi:'앱 언어가 변경되었습니다 🌐',
+  toastZh:'⌨️ 중국어 키보드 준비 완료 — "nihao"처럼 입력하세요'
+},
+zh: {
+  tag:'说遍全世界', signupTitle:'免费注册', signupSub:'用任何语言，学任何语言。',
+  phName:'你的名字', phEmail:'邮箱地址', phPass:'密码', iSpeak:'我会的语言', iLearn:'我想学的语言',
+  createAccount:'创建账户', haveAccount:'已经有账号了？', loginBtn:'登录', searchPh:'搜索 40 多种语言…',
+  navLearn:'学习', navPractice:'练习', navLeague:'排行榜', navShop:'商店', navProfile:'个人资料', mnavYou:'我的', you:'你',
+  heroBadge:'40+ 种语言 • 一个应用', heroTitle:'用你的语言，学任何语言。',
+  heroSub:'自适应课程、母语发音与真实对话——随时切换界面语言和学习语言。',
+  continueLesson:'继续学习', changeLang:'切换语言',
+  practiceHub:'练习中心', practiceTitle:'巩固最需要的部分', mistakes:'错题复习',
+  mistakesDesc:'复习本周答错的 14 个生词。', practiceCta:'开始练习 • +10 XP',
+  pinyinTitle:'拼音打字（中文）', pinyinDesc:'练习中文键盘：输入拼音，选择汉字。', startBtn:'开始',
+  leagueName:'蓝宝石联赛', leagueSub:'前 10 名晋级红宝石 • 剩余 4 天',
+  shopTitle:'为学习加把劲', gems:'宝石', itemHearts:'补充爱心', itemHeartsDesc:'立即恢复到 5 颗爱心。',
+  itemFreeze:'连续打卡保护', itemFreezeDesc:'保护你的连续记录 1 天。', itemBoost:'XP 加成', itemBoostDesc:'30 分钟内经验翻倍。',
+  dayStreak:'连续打卡 {n} 天', logout:'退出登录', dailyQuests:'每日任务', earnXp:'获得 20 XP',
+  travelMode:'旅行模式 • 中文键盘', travelModeDesc:'试用内置的中文拼音键盘。', tryPinyin:'试用拼音输入法',
+  completeTitle:'课程完成！', completeSub:'太棒了——每一次练习都让你更接近真实交流。',
+  reviewLater:'稍后复习', done:'完成', accuracy:'正确率',
+  langTitle:'用任何语言学习与浏览',
+  langSub:'选择你想学习的语言，以及 OmniLingual 界面使用的语言。',
+  appLang:'界面语言', tipLabel:'提示：', tipText:'用中文输入时会打开内置拼音键盘。', doneBtn:'完成',
+  check:'检查', skip:'跳过', correctTitle:'答对了！', correctSub:'做得好。', correctAnswer:'正确答案：',
+  ofLabel:'/', practiceTag:'练习', translateSentence:'翻译这句话', typeHere:'在这里输入…',
+  pinyinIme:'拼音输入法 • 候选词', onScreenKb:'屏幕中文键盘', hint:'提示',
+  listenInstruction:'点击播放，输入你听到的内容', startHere:'从这里开始',
+  typePinyinPrompt:'输入拼音（如 "nihao"）即可看到汉字',
+  noMatch:'没有匹配：', tryWords:'试试 "nihao"、"xiexie" 等',
+  badgeLearning:'学习中', badgeApp:'界面',
+  toastWelcome:'欢迎加入 OmniLingual，{n}！🎉', toastBack:'欢迎回来！👋', toastNoHearts:'爱心用完了！去商店补充吧。',
+  toastNoGems:'宝石不足！💎', toastBought:'购买成功！🎉', toastUi:'界面语言已更新 🌐',
+  toastZh:'⌨️ 中文键盘已就绪——输入拼音如 "nihao"'
+},
+ar: {
+  tag:'تحدّث العالم', signupTitle:'سجّل مجانًا', signupSub:'تعلّم أي لغة، وبأي لغة.',
+  phName:'اسمك', phEmail:'البريد الإلكتروني', phPass:'كلمة المرور', iSpeak:'أنا أتحدث', iLearn:'أريد أن أتعلّم',
+  createAccount:'إنشاء حساب', haveAccount:'لديك حساب بالفعل؟', loginBtn:'تسجيل الدخول', searchPh:'ابحث في أكثر من 40 لغة…',
+  navLearn:'تعلّم', navPractice:'تدريب', navLeague:'المتصدّرون', navShop:'المتجر', navProfile:'الملف', mnavYou:'أنت', you:'أنت',
+  heroBadge:'أكثر من 40 لغة • تطبيق واحد', heroTitle:'تعلّم أي لغة، بلغتك.',
+  heroSub:'دروس متكيّفة وصوت أصلي ومحادثات حقيقية — بدّل الواجهة ولغة التعلّم في أي وقت.',
+  continueLesson:'متابعة الدرس', changeLang:'تغيير اللغة',
+  practiceHub:'مركز التدريب', practiceTitle:'طوّر الأهم أولًا', mistakes:'مراجعة الأخطاء',
+  mistakesDesc:'راجع 14 كلمة أخطأت فيها هذا الأسبوع.', practiceCta:'تدرّب • +10 XP',
+  pinyinTitle:'كتابة البينيين (中文)', pinyinDesc:'تدرّب على لوحة المفاتيح الصينية: اكتب البينيين واختر الحرف.', startBtn:'ابدأ',
+  leagueName:'دوري الياقوت الأزرق', leagueSub:'أفضل 10 يتأهّلون إلى الياقوت الأحمر • 4 أيام متبقية',
+  shopTitle:'عزّز تعلّمك', gems:'جواهر', itemHearts:'تعبئة القلوب', itemHeartsDesc:'استعد 5 قلوب فورًا.',
+  itemFreeze:'تجميد السلسلة', itemFreezeDesc:'يحمي سلسلتك ليوم واحد.', itemBoost:'تعزيز XP', itemBoostDesc:'مضاعفة الخبرة لمدة 30 دقيقة.',
+  dayStreak:'سلسلة {n} يوم', logout:'خروج', dailyQuests:'المهام اليومية', earnXp:'اكسب 20 XP',
+  travelMode:'وضع السفر • 中文键盘', travelModeDesc:'جرّب لوحة المفاتيح الصينية المدمجة.', tryPinyin:'جرّب بينيين IME',
+  completeTitle:'أكملت الدرس!', completeSub:'عمل رائع — كل جلسة تقرّبك من الطلاقة الحقيقية.',
+  reviewLater:'مراجعة لاحقًا', done:'تم', accuracy:'الدقة',
+  langTitle:'تعلّم وتصفّح بأي لغة',
+  langSub:'اختر اللغة التي تريد تعلّمها واللغة التي تستخدمها واجهة OmniLingual.',
+  appLang:'لغة التطبيق', tipLabel:'نصيحة:', tipText:'الكتابة بـ 中文 تفتح لوحة مفاتيح بينيين مدمجة.', doneBtn:'تم',
+  check:'تحقّق', skip:'تخطَّ', correctTitle:'صحيح!', correctSub:'أحسنت.', correctAnswer:'الإجابة الصحيحة:',
+  ofLabel:'من', practiceTag:'تدريب', translateSentence:'ترجم هذه الجملة', typeHere:'اكتب هنا...',
+  pinyinIme:'محرّك بينيين • الاقتراحات', onScreenKb:'لوحة مفاتيح صينية على الشاشة', hint:'تلميح',
+  listenInstruction:'اضغط للاستماع واكتب ما تسمعه', startHere:'ابدأ هنا',
+  typePinyinPrompt:'اكتب البينيين (مثل "nihao") لرؤية الحروف الصينية',
+  noMatch:'لا نتائج لـ', tryWords:'جرّب "nihao" أو "xiexie" وغيرها',
+  badgeLearning:'قيد التعلّم', badgeApp:'التطبيق',
+  toastWelcome:'مرحبًا بك في OmniLingual يا {n}! 🎉', toastBack:'مرحبًا بعودتك! 👋', toastNoHearts:'نفدت القلوب! أعد تعبئتها من المتجر.',
+  toastNoGems:'الجواهر غير كافية! 💎', toastBought:'تم الشراء بنجاح! 🎉', toastUi:'تم تحديث لغة التطبيق 🌐',
+  toastZh:'⌨️ لوحة المفاتيح الصينية جاهزة — اكتب بينيين مثل "nihao"'
+},
+hi: {
+  tag:'दुनिया से बात करें', signupTitle:'मुफ़्त में साइन अप करें', signupSub:'कोई भी भाषा, किसी भी भाषा में सीखें।',
+  phName:'आपका नाम', phEmail:'ईमेल पता', phPass:'पासवर्ड', iSpeak:'मैं बोलता हूँ', iLearn:'मैं सीखना चाहता हूँ',
+  createAccount:'खाता बनाएँ', haveAccount:'पहले से खाता है?', loginBtn:'लॉग इन', searchPh:'40+ भाषाएँ खोजें…',
+  navLearn:'सीखें', navPractice:'अभ्यास', navLeague:'लीडरबोर्ड', navShop:'दुकान', navProfile:'प्रोफ़ाइल', mnavYou:'आप', you:'आप',
+  heroBadge:'40+ भाषाएँ • एक ऐप', heroTitle:'कोई भी भाषा, अपनी भाषा में सीखें।',
+  heroSub:'अनुकूल पाठ, देशी ऑडियो और असली बातचीत — इंटरफ़ेस और सीखने की भाषा कभी भी बदलें।',
+  continueLesson:'पाठ जारी रखें', changeLang:'भाषा बदलें',
+  practiceHub:'अभ्यास केंद्र', practiceTitle:'जो सबसे ज़रूरी है उसे निखारें', mistakes:'ग़लतियों की समीक्षा',
+  mistakesDesc:'इस हफ़्ते ग़लत हुए 14 शब्द दोबारा देखें।', practiceCta:'अभ्यास करें • +10 XP',
+  pinyinTitle:'पिनयिन टाइपिंग (中文)', pinyinDesc:'चीनी कीबोर्ड का अभ्यास करें: पिनयिन लिखें, हानज़ी चुनें।', startBtn:'शुरू करें',
+  leagueName:'नीलम लीग', leagueSub:'टॉप 10 रूबी में जाएँगे • 4 दिन बाकी',
+  shopTitle:'सीखने को और तेज़ बनाएँ', gems:'रत्न', itemHearts:'दिल रीफ़िल', itemHeartsDesc:'तुरंत 5 दिल वापस पाएँ।',
+  itemFreeze:'स्ट्रीक फ़्रीज़', itemFreezeDesc:'1 दिन तक स्ट्रीक सुरक्षित रखें।', itemBoost:'XP बूस्ट', itemBoostDesc:'30 मिनट के लिए दोगुना XP।',
+  dayStreak:'{n} दिन की स्ट्रीक', logout:'लॉग आउट', dailyQuests:'दैनिक क्वेस्ट', earnXp:'20 XP कमाएँ',
+  travelMode:'ट्रैवल मोड • 中文键盘', travelModeDesc:'बिल्ट-इन चीनी पिनयिन कीबोर्ड आज़माएँ।', tryPinyin:'पिनयिन IME आज़माएँ',
+  completeTitle:'पाठ पूरा हुआ!', completeSub:'शानदार — हर सत्र आपको असली धाराप्रवाही के करीब लाता है।',
+  reviewLater:'बाद में देखें', done:'पूरा', accuracy:'सटीकता',
+  langTitle:'किसी भी भाषा में सीखें और चलाएँ',
+  langSub:'वह भाषा चुनें जो सीखनी है और वह भाषा जिसमें OmniLingual का इंटरफ़ेस होगा।',
+  appLang:'ऐप भाषा', tipLabel:'सुझाव:', tipText:'中文 में लिखने पर बिल्ट-इन पिनयिन कीबोर्ड खुलता है।', doneBtn:'पूरा',
+  check:'जाँचें', skip:'छोड़ें', correctTitle:'सही!', correctSub:'बहुत बढ़िया।', correctAnswer:'सही उत्तर:',
+  ofLabel:'में से', practiceTag:'अभ्यास', translateSentence:'इस वाक्य का अनुवाद करें', typeHere:'यहाँ लिखें...',
+  pinyinIme:'पिनयिन IME • सुझाव', onScreenKb:'स्क्रीन पर चीनी कीबोर्ड', hint:'संकेत',
+  listenInstruction:'सुनने के लिए टैप करें और जो सुनें वह लिखें', startHere:'यहाँ से शुरू करें',
+  typePinyinPrompt:'चीनी अक्षर देखने के लिए पिनयिन लिखें (जैसे "nihao")',
+  noMatch:'कोई मेल नहीं:', tryWords:'"nihao", "xiexie" आदि आज़माएँ',
+  badgeLearning:'सीख रहे', badgeApp:'ऐप',
+  toastWelcome:'OmniLingual में स्वागत है, {n}! 🎉', toastBack:'वापसी पर स्वागत है! 👋', toastNoHearts:'दिल ख़त्म! दुकान से रीफ़िल करें।',
+  toastNoGems:'रत्न कम हैं! 💎', toastBought:'खरीद सफल! 🎉', toastUi:'ऐप भाषा अपडेट हुई 🌐',
+  toastZh:'⌨️ चीनी कीबोर्ड तैयार — "nihao" जैसा पिनयिन लिखें'
+},
+ru: {
+  tag:'ГОВОРИ СО ВСЕМ МИРОМ', signupTitle:'Зарегистрируйтесь бесплатно', signupSub:'Учите любой язык — на любом языке.',
+  phName:'Ваше имя', phEmail:'Эл. почта', phPass:'Пароль', iSpeak:'Я ГОВОРЮ', iLearn:'ХОЧУ УЧИТЬ',
+  createAccount:'СОЗДАТЬ АККАУНТ', haveAccount:'Уже есть аккаунт?', loginBtn:'Войти', searchPh:'Поиск среди 40+ языков…',
+  navLearn:'УЧИТЬ', navPractice:'ПРАКТИКА', navLeague:'РЕЙТИНГ', navShop:'МАГАЗИН', navProfile:'ПРОФИЛЬ', mnavYou:'ВЫ', you:'Вы',
+  heroBadge:'БОЛЕЕ 40 ЯЗЫКОВ • ОДНО ПРИЛОЖЕНИЕ', heroTitle:'Учите любой язык — на своём языке.',
+  heroSub:'Адаптивные уроки, речь носителей и настоящие диалоги — меняйте интерфейс и изучаемый язык в любой момент.',
+  continueLesson:'ПРОДОЛЖИТЬ УРОК', changeLang:'Сменить язык',
+  practiceHub:'ЦЕНТР ПРАКТИКИ', practiceTitle:'Прокачайте главное', mistakes:'Работа над ошибками',
+  mistakesDesc:'Повторите 14 слов, в которых ошиблись на этой неделе.', practiceCta:'ПРАКТИКА • +10 XP',
+  pinyinTitle:'Ввод пиньиня (中文)', pinyinDesc:'Потренируйте китайскую клавиатуру: наберите пиньинь и выберите иероглиф.', startBtn:'НАЧАТЬ',
+  leagueName:'Сапфировая лига', leagueSub:'Топ-10 переходят в Рубиновую • осталось 4 дня',
+  shopTitle:'Ускорьте обучение', gems:'КРИСТАЛЛЫ', itemHearts:'Восполнить сердца', itemHeartsDesc:'Мгновенно вернуть 5 сердец.',
+  itemFreeze:'Заморозка серии', itemFreezeDesc:'Защищает серию на 1 день.', itemBoost:'Буст XP', itemBoostDesc:'Двойной XP на 30 минут.',
+  dayStreak:'серия {n} дней', logout:'ВЫЙТИ', dailyQuests:'Ежедневные задания', earnXp:'Получите 20 XP',
+  travelMode:'Режим путешествия • 中文键盘', travelModeDesc:'Попробуйте встроенную китайскую клавиатуру пиньиня.', tryPinyin:'ПОПРОБОВАТЬ ПИНЬИНЬ IME',
+  completeTitle:'Урок завершён!', completeSub:'Отличная работа — каждое занятие приближает к настоящей беглой речи.',
+  reviewLater:'ПОВТОРИТЬ ПОЗЖЕ', done:'ГОТОВО', accuracy:'Точность',
+  langTitle:'Учитесь и пользуйтесь на любом языке',
+  langSub:'Выберите язык для изучения и язык интерфейса OmniLingual.',
+  appLang:'ЯЗЫК ПРИЛОЖЕНИЯ', tipLabel:'Совет:', tipText:'Ввод на 中文 открывает встроенную клавиатуру пиньиня.', doneBtn:'ГОТОВО',
+  check:'ПРОВЕРИТЬ', skip:'ПРОПУСТИТЬ', correctTitle:'Верно!', correctSub:'Отличная работа.', correctAnswer:'Правильный ответ:',
+  ofLabel:'ИЗ', practiceTag:'ПРАКТИКА', translateSentence:'Переведите это предложение', typeHere:'Введите здесь...',
+  pinyinIme:'Пиньинь IME • Варианты', onScreenKb:'Экранная китайская клавиатура', hint:'Подсказка',
+  listenInstruction:'Нажмите, чтобы прослушать, и введите услышанное', startHere:'НАЧАТЬ ЗДЕСЬ',
+  typePinyinPrompt:'Введите пиньинь (например, "nihao"), чтобы увидеть иероглифы',
+  noMatch:'Нет совпадений для', tryWords:'Попробуйте "nihao", "xiexie" и т. п.',
+  badgeLearning:'УЧУ', badgeApp:'ПРИЛОЖЕНИЕ',
+  toastWelcome:'Добро пожаловать в OmniLingual, {n}! 🎉', toastBack:'С возвращением! 👋', toastNoHearts:'Сердца закончились! Восполните в магазине.',
+  toastNoGems:'Недостаточно кристаллов! 💎', toastBought:'Покупка совершена! 🎉', toastUi:'Язык приложения обновлён 🌐',
+  toastZh:'⌨️ Китайская клавиатура готова — наберите пиньинь, например "nihao"'
+}
+};
+
+/* ---------- VOCABULARY BANK ---------- */
+const BASIC = {
+  en:{hello:'Hello',thanks:'Thank you',water:'Water',morning:'Good morning',please:'Please',bye:'Goodbye'},
+  es:{hello:'Hola',thanks:'Gracias',water:'Agua',morning:'Buenos días',please:'Por favor',bye:'Adiós'},
+  fr:{hello:'Bonjour',thanks:'Merci',water:'Eau',morning:'Bonjour',please:"S'il vous plaît",bye:'Au revoir'},
+  de:{hello:'Hallo',thanks:'Danke',water:'Wasser',morning:'Guten Morgen',please:'Bitte',bye:'Tschüss'},
+  it:{hello:'Ciao',thanks:'Grazie',water:'Acqua',morning:'Buongiorno',please:'Per favore',bye:'Addio'},
+  pt:{hello:'Olá',thanks:'Obrigado',water:'Água',morning:'Bom dia',please:'Por favor',bye:'Tchau'},
+  ja:{hello:'こんにちは',thanks:'ありがとうございます',water:'水',morning:'おはようございます',please:'ください',bye:'さようなら'},
+  ko:{hello:'안녕하세요',thanks:'감사합니다',water:'물',morning:'좋은 아침',please:'주세요',bye:'안녕히 가세요'},
+  zh:{hello:'你好',thanks:'谢谢',water:'水',morning:'早上好',please:'请',bye:'再见'},
+  ar:{hello:'مرحبا',thanks:'شكرا',water:'ماء',morning:'صباح الخير',please:'من فضلك',bye:'وداعا'},
+  hi:{hello:'नमस्ते',thanks:'धन्यवाद',water:'पानी',morning:'सुप्रभात',please:'कृपया',bye:'अलविदा'},
+  ru:{hello:'Привет',thanks:'Спасибо',water:'Вода',morning:'Доброе утро',please:'Пожалуйста',bye:'До свидания'}
+};
+
+const PINYIN_DICT = {
+  ni:['你','尼','泥'], hao:['好','号','浩'], nihao:['你好'], ma:['吗','妈','马'], nihaoma:['你好吗'],
+  xie:['谢','写','些'], xiexie:['谢谢'], zai:['再','在'], jian:['见','件'], zaijian:['再见'],
+  wo:['我','窝'], ai:['爱','碍'], woaini:['我爱你'], shui:['水','睡'], qing:['请','青'],
+  dui:['对','队'], bu:['不','布'], qi:['起','气'], duibuqi:['对不起'], zhong:['中','种'],
+  guo:['国','过'], zhongguo:['中国']
+};
+
+const courseBank = {
+  es: {
+    units: [
+      {title:'Unit 1', desc:'Greet people', color:'#12A56B', icon:'👋', lessons:3},
+      {title:'Unit 2', desc:'Order food', color:'#2C93D5', icon:'🍽️', lessons:3}
+    ],
+    ex: [
+      {type:'choice', q:'How do you say "Hello" in Spanish?', options:['Hola','Adiós','Gracias'], answer:'Hola'},
+      {type:'type', q:'Type "Thank you" in Spanish', answer:'Gracias', hint:'Gracias'},
+      {type:'bank', q:'Translate "Good morning"', answer:'Buenos días', words:['Buenos','días','buenas','noches','Hola'], hint:'Buenos días'},
+      {type:'listen', q:'Type what you hear', answer:'¿Cómo estás?', hint:'How are you?'},
+      {type:'choice', q:'Pick the word for "Water"', options:['Agua','Pan','Leche'], answer:'Agua', image:['💧','🍞','🥛']}
+    ]
+  },
+  zh: {
+    units: [
+      {title:'单元 1', desc:'问候 • Greetings', color:'#D63A2F', icon:'👋', lessons:3},
+      {title:'单元 2', desc:'食物 • Food', color:'#F5A524', icon:'🥟', lessons:3}
+    ],
+    ex: [
+      {type:'choice', q:'How do you say "Hello" in Chinese?', options:['你好','再见','谢谢'], answer:'你好', hint:'nǐ hǎo'},
+      {type:'type', q:'Write "Hello" in Chinese — use the pinyin keyboard', answer:'你好', hint:'pinyin: ni hao', pinyin:'nihao'},
+      {type:'type', q:'Write "Thank you" in Chinese', answer:'谢谢', hint:'pinyin: xie xie', pinyin:'xiexie'},
+      {type:'listen', q:'Type what you hear (pinyin keyboard)', answer:'你好吗', hint:'nǐ hǎo ma', pinyin:'nihaoma'},
+      {type:'type', q:'Write "China" in Chinese', answer:'中国', hint:'pinyin: zhong guo', pinyin:'zhongguo'}
+    ]
+  }
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function makeFallback(code) {
+  const b = BASIC[code] || BASIC.en;
+  const meta = LANGUAGES.find(l => l.code === code);
+  const name = meta ? meta.name : 'Language';
+  function bankWords(ans, extras) {
+    const parts = ans.split(' ');
+    const exParts = extras.join(' ').split(' ');
+    const pool = [...parts];
+    for (const w of exParts) {
+      if (pool.length >= 6) break;
+      if (!pool.includes(w)) pool.push(w);
+    }
+    return shuffle(pool);
+  }
+  return {
+    units: [
+      {title:'Unit 1', desc:'Basics & greetings', color:'#12A56B', icon:'👋', lessons:3},
+      {title:'Unit 2', desc:'Food & drink', color:'#2C93D5', icon:'🍽️', lessons:3}
+    ],
+    ex: [
+      {type:'choice', q:'How do you say "Hello" in ' + name + '?', options: shuffle([b.hello, b.thanks, b.water]), answer: b.hello},
+      {type:'bank', q:'Translate "Good morning"', answer: b.morning, words: bankWords(b.morning, [b.please, b.thanks]), hint: b.morning},
+      {type:'type', q:'Type "Thank you" in ' + name, answer: b.thanks, hint: b.thanks},
+      {type:'listen', q:'Type what you hear', answer: b.bye, hint:'Goodbye'}
+    ]
+  };
+}
+LANGUAGES.forEach(l => { if (!courseBank[l.code]) courseBank[l.code] = makeFallback(l.code); });
+
+const SHOP_ITEMS = [
+  {id:'hearts', icon:'ri-heart-3-fill', color:'#F2685C', bg:'#FFF0EE', titleKey:'itemHearts', descKey:'itemHeartsDesc', price:350},
+  {id:'freeze', icon:'ri-snowflake-line', color:'#2C93D5', bg:'#EAF5FC', titleKey:'itemFreeze', descKey:'itemFreezeDesc', price:200},
+  {id:'boost', icon:'ri-rocket-2-fill', color:'#F5A524', bg:'#FFF7E8', titleKey:'itemBoost', descKey:'itemBoostDesc', price:150}
+];
+
+const LEADERBOARD_DATA = [
+  {name:'Maya Chen', xp:1530, img:14, flag:'🇨🇳'},
+  {name:'Diego Ruiz', xp:1410, img:12, flag:'🇪🇸'},
+  {name:'Yuki Tanaka', xp:1355, img:18, flag:'🇯🇵'},
+  {name:'Amara Diallo', xp:1290, img:24, flag:'🇫🇷'},
+  {name:'You', xp:1240, img:32, flag:'🇺🇸', you:true},
+  {name:'Ken Watanabe', xp:980, img:18, flag:'🇰🇷'},
+  {name:'Sofia Rossi', xp:860, img:22, flag:'🇮🇹'},
+  {name:'Leo Martin', xp:740, img:27, flag:'🇩🇪'}
+];
+
+const state = {
+  user: null,
+  uiLang: 'en',
+  learningLang: 'es',
+  xp: 1240,
+  streak: 12,
+  hearts: 5,
+  gems: 420,
+  completed: new Set(['0-0']),
+  currentUnit: 0,
+  currentLesson: 0,
+  exercises: [],
+  idx: 0,
+  selectedChoice: null,
+  bankWords: [],
+  selectedWords: [],
+  inputValue: '',
+  zhCommitted: '',
+  zhBuffer: '',
+  wrongCount: 0,
+  answered: false,
+  lessonFinished: false,
+  practiceMode: false
+};
+
+/* ---------- HELPERS ---------- */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function normalize(s) {
+  return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+function normalizeZh(s) {
+  return String(s || '').replace(/[\s\u3000]+/g, '').replace(/[？?！!。，、；：“”‘’（）().,;:'"\-–—\[\]]/g, '').trim();
+}
+function t(key) {
+  const pack = I18N[state.uiLang] || I18N.en;
+  return pack[key] || I18N.en[key] || key;
+}
+function tf(key, values) {
+  let out = t(key);
+  for (const k in values) out = out.replace('{' + k + '}', values[k]);
+  return out;
+}
+
+/* ---------- I18N APPLY ---------- */
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  const html = document.documentElement;
+  html.lang = state.uiLang;
+  html.dir = state.uiLang === 'ar' ? 'rtl' : 'ltr';
+  if (state.user) {
+    updateStats();
+    renderUnits();
+    renderLeaderboard();
+    renderShop();
+  }
+}
+
+/* ---------- PERSISTENCE ---------- */
+function saveState() {
+  try {
+    localStorage.setItem('omnilingual_v1', JSON.stringify({
+      user: state.user, xp: state.xp, gems: state.gems, hearts: state.hearts, streak: state.streak,
+      uiLang: state.uiLang, learningLang: state.learningLang, completed: [...state.completed]
+    }));
+  } catch (e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem('omnilingual_v1');
+    if (!raw) return false;
+    const o = JSON.parse(raw);
+    if (!o.user) return false;
+    state.user = o.user;
+    state.xp = o.xp ?? state.xp;
+    state.gems = o.gems ?? state.gems;
+    state.hearts = o.hearts ?? state.hearts;
+    state.streak = o.streak ?? state.streak;
+    state.uiLang = o.uiLang || 'en';
+    state.learningLang = o.learningLang || 'es';
+    state.completed = new Set(o.completed || ['0-0']);
+    return true;
+  } catch (e) { return false; }
+}
+
+/* ---------- BOOT ---------- */
+function init() {
+  buildSelects();
+  if (loadState()) { showApp(); } else { applyI18n(); showAuth(); }
+}
+
+function showAuth() {
+  document.getElementById('auth-modal').classList.remove('hidden');
+  document.getElementById('auth-modal').classList.add('flex');
+  document.getElementById('app-root').classList.add('hidden');
+  document.getElementById('app-root').classList.remove('flex');
+}
+
+function showApp() {
+  document.getElementById('auth-modal').classList.add('hidden');
+  document.getElementById('auth-modal').classList.remove('flex');
+  document.getElementById('app-root').classList.remove('hidden');
+  document.getElementById('app-root').classList.add('flex');
+  updateStats();
+  renderUnits();
+  renderLeaderboard();
+  renderShop();
+  applyI18n();
+  switchView('learn');
+  renderLangGrid('');
+}
+
+/* ---------- AUTH ---------- */
+function signup() {
+  const name = document.getElementById('signup-name').value || 'Alex Rivera';
+  const email = document.getElementById('signup-email').value || 'alex@omnilingual.com';
+  state.user = {name, email};
+  state.uiLang = document.getElementById('signup-native').value;
+  state.learningLang = document.getElementById('signup-learning').value;
+  state.completed = new Set(['0-0']);
+  saveState();
+  showApp();
+  toast(tf('toastWelcome', {n: name}));
+}
+function login() {
+  state.user = {name:'Alex Rivera', email:'alex@omnilingual.com'};
+  state.completed = new Set(['0-0']);
+  saveState();
+  showApp();
+  toast(t('toastBack'));
+}
+function logout() {
+  state.user = null;
+  localStorage.removeItem('omnilingual_v1');
+  applyI18n();
+  showAuth();
+}
+
+function buildSelects() {
+  const opts = LANGUAGES.map(l => '<option value="' + l.code + '">' + l.flag + ' ' + l.native + '</option>').join('');
+  const nativeSel = document.getElementById('signup-native');
+  const learnSel = document.getElementById('signup-learning');
+  const uiSel = document.getElementById('ui-lang-select');
+  const learnSel2 = document.getElementById('learning-lang-select');
+  if (nativeSel) { nativeSel.innerHTML = opts; nativeSel.value = state.uiLang; }
+  if (learnSel) { learnSel.innerHTML = opts; learnSel.value = state.learningLang; }
+  if (uiSel) { uiSel.innerHTML = opts; uiSel.value = state.uiLang; }
+  if (learnSel2) { learnSel2.innerHTML = opts; learnSel2.value = state.learningLang; }
+}
+
+/* ---------- STATS ---------- */
+function updateStats() {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('streak-count', state.streak);
+  set('hearts-top', state.hearts);
+  set('xp-top', state.xp.toLocaleString());
+  set('gems-top', state.gems);
+  set('gems-shop', state.gems);
+  set('profile-streak', tf('dayStreak', {n: state.streak}));
+  if (state.user) {
+    set('profile-name', state.user.name);
+    set('profile-email', state.user.email);
+  }
+  const native = LANGUAGES.find(l => l.code === state.uiLang) || LANGUAGES[0];
+  const learning = LANGUAGES.find(l => l.code === state.learningLang) || LANGUAGES[1];
+  set('native-flag', native.flag);
+  set('learning-flag', learning.flag);
+  set('learning-name', learning.name);
+  set('profile-flag', learning.flag);
+  set('profile-lang', learning.name);
+  set('lesson-hearts', state.hearts);
+}
+
+/* ---------- VIEWS ---------- */
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+  const target = document.getElementById('view-' + view);
+  if (target) {
+    target.classList.remove('hidden');
+    target.classList.remove('reveal');
+    void target.offsetWidth;
+    target.classList.add('reveal');
+  }
+  document.querySelectorAll('[data-nav]').forEach(b => {
+    b.className = b.dataset.nav === view
+      ? 'nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-brandSoft border-2 border-[#A9E0C8] text-brandDark font-extrabold text-[13.5px] tracking-[0.09em]'
+      : 'nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border-2 border-transparent text-[#6B7B82] font-extrabold text-[13.5px] tracking-[0.09em] hover:bg-[#F6F2EC]';
+  });
+  document.querySelectorAll('[data-mnav]').forEach(b => {
+    const active = b.dataset.mnav === view;
+    b.className = 'flex flex-col items-center gap-1 ' + (active ? 'text-brand' : 'text-[#9AA8AD]') + ' w-[60px]';
+    const icon = b.querySelector('i');
+    if (icon) icon.className = b.dataset.icon + (active ? '-fill' : '-line') + ' text-[21px]';
+  });
+  const main = document.getElementById('main-scroll');
+  if (main) main.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- UNITS ---------- */
+function renderUnits() {
+  const container = document.getElementById('units-container');
+  const course = courseBank[state.learningLang];
+  if (!course) return;
+  let html = '';
+  course.units.forEach((unit, ui) => {
+    html += '<section class="rounded-[26px] overflow-hidden border border-[#E7E2DA] bg-white shadow-soft reveal" style="--d:' + (ui * 100) + 'ms">' +
+      '<div class="px-5 md:px-6 py-5 flex items-center gap-4 relative" style="background:' + unit.color + '">' +
+        '<div class="w-11 h-11 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-[20px]">' + unit.icon + '</div>' +
+        '<div class="flex-1 min-w-0">' +
+          '<div class="font-display font-extrabold text-[10.5px] tracking-[0.22em] text-white/80">' + esc(unit.title.toUpperCase()) + '</div>' +
+          '<div class="font-display font-extrabold text-[17px] md:text-[19px] leading-tight mt-0.5 text-white">' + esc(unit.desc) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="relative py-9 px-4 flex flex-col items-center gap-4 bg-white">';
+
+    html += Array.from({length: unit.lessons}).map((_, li) => {
+      const key = ui + '-' + li;
+      const completed = state.completed.has(key);
+      const isCurrent = !completed && (li === 0 || state.completed.has(ui + '-' + (li - 1)));
+      const locked = !completed && !isCurrent;
+      let btnClass = '', icon = '';
+      if (completed) { btnClass = 'bg-gradient-to-br from-brand to-brandDark text-white'; icon = '<i class="ri-check-line text-[26px]"></i>'; }
+      else if (isCurrent) { btnClass = 'bg-gradient-to-br from-brand to-brandDark text-white current'; icon = '<i class="ri-star-fill text-[24px]"></i>'; }
+      else { btnClass = 'locked'; icon = '<i class="ri-lock-2-fill text-[20px]"></i>'; }
+      const canClick = !locked;
+      return '<div class="relative flex flex-col items-center pop" style="--d:' + (li * 110) + 'ms">' +
+        (isCurrent ? '<div class="absolute -top-11 left-1/2 -translate-x-1/2 bg-white border-2 border-brand text-brand font-display font-extrabold text-[10px] tracking-[0.14em] px-3.5 py-2 rounded-2xl whitespace-nowrap z-10">' + esc(t('startHere')) + '</div>' : '') +
+        '<button ' + (canClick ? 'onclick="startLesson(' + ui + ',' + li + ')"' : 'disabled') +
+          ' class="lesson-node w-[68px] h-[68px] md:w-[76px] md:h-[76px] rounded-full flex items-center justify-center ' + btnClass + ' ' + (!canClick ? 'cursor-not-allowed' : '') + '">' + icon + '</button>' +
+        (completed
+          ? '<div class="mt-2.5 w-8 h-8 rounded-full bg-[#FFD28A] border-2 border-white shadow-[0_3px_0_#D8A34E] flex items-center justify-center text-[11px]">🏆</div>'
+          : '<div class="mt-2.5 w-7 h-[5px] rounded-full ' + (isCurrent ? 'bg-brand' : 'bg-[#E6EAEA]') + '"></div>') +
+        '</div>';
+    }).join('');
+
+    html += '</div></section>';
+  });
+  container.innerHTML = html;
+}
+
+function nextLessonIndex() {
+  const course = courseBank[state.learningLang];
+  for (let u = 0; u < course.units.length; u++) {
+    for (let l = 0; l < course.units[u].lessons; l++) {
+      if (!state.completed.has(u + '-' + l)) return l;
+    }
+  }
+  return 0;
+}
+
+/* ---------- LEADERBOARD ---------- */
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  if (!list) return;
+  list.innerHTML = LEADERBOARD_DATA.map((u, i) => {
+    const displayName = u.you ? t('you') : u.name;
+    return '<div class="flex items-center gap-4 p-4 border-b border-[#F0EDE8] last:border-0 ' + (u.you ? 'bg-brandSoft' : '') + '">' +
+      '<span class="font-display font-black text-[18px] text-[#9AA8AD] w-8 tabular">' + (i + 1) + '</span>' +
+      '<img src="https://i.pravatar.cc/120?img=' + u.img + '" class="w-11 h-11 rounded-2xl border-2 border-[#E7E2DA] object-cover"/>' +
+      '<div class="flex-1 min-w-0">' +
+        '<div class="font-extrabold text-[14px] text-ink truncate">' + esc(displayName) + ' ' + u.flag + '</div>' +
+        '<div class="text-[11px] text-[#8D9AA0] font-semibold tabular">' + u.xp.toLocaleString() + ' XP</div>' +
+      '</div>' +
+      (u.you ? '<span class="bg-brand text-white text-[9px] font-extrabold px-2 py-1 rounded-full tracking-[0.1em]">' + esc(t('mnavYou')) + '</span>' : '') +
+    '</div>';
+  }).join('');
+}
+
+/* ---------- SHOP ---------- */
+function renderShop() {
+  const grid = document.getElementById('shop-grid');
+  if (!grid) return;
+  grid.innerHTML = SHOP_ITEMS.map((item, i) =>
+    '<div class="card-hover bg-white border border-[#E7E2DA] rounded-3xl p-5 reveal" style="--d:' + (i * 100) + 'ms">' +
+      '<div class="w-12 h-12 rounded-2xl ' + item.bg + ' flex items-center justify-center ' + item.color + ' text-[22px]"><i class="' + item.icon + '"></i></div>' +
+      '<div class="font-display font-extrabold text-ink text-[17px] mt-3">' + esc(t(item.titleKey)) + '</div>' +
+      '<div class="text-[13px] text-[#6B7B82] mt-1 leading-relaxed">' + esc(t(item.descKey)) + '</div>' +
+      '<button onclick="buyItem(\'' + item.id + '\',' + item.price + ')" class="btn-3d mt-4 w-full bg-white border-2 border-[#E7E2DA] font-display font-black py-3.5 rounded-2xl shadow-[0_5px_0_#E7E2DA] text-plum text-[13px] tracking-[0.12em] flex items-center justify-center gap-2">' +
+        '<i class="ri-vip-diamond-fill"></i> ' + item.price +
+      '</button>' +
+    '</div>'
+  ).join('');
+}
+
+function buyItem(id, price) {
+  if (state.gems < price) { toast(t('toastNoGems')); return; }
+  state.gems -= price;
+  if (id === 'hearts') state.hearts = 5;
+  updateStats();
+  saveState();
+  toast(t('toastBought'));
+}
+
+/* ---------- LESSON FLOW ---------- */
+function startLesson(ui, li) {
+  if (state.hearts <= 0) { toast(t('toastNoHearts')); return; }
+  state.currentUnit = ui;
+  state.currentLesson = li;
+  state.practiceMode = false;
+  const bank = courseBank[state.learningLang].ex;
+  state.exercises = shuffle(bank).slice(0, Math.min(4, bank.length));
+  state.idx = 0;
+  state.wrongCount = 0;
+  state.lessonFinished = false;
+  openLessonShell();
+}
+
+function startPractice(type) {
+  if (state.hearts <= 0) { toast(t('toastNoHearts')); return; }
+  const bank = courseBank[state.learningLang].ex;
+  let pool = shuffle(bank);
+  if (type === 'listen') pool = pool.map(e => Object.assign({}, e, {type:'listen'}));
+  state.exercises = pool.slice(0, 4);
+  state.practiceMode = true;
+  state.idx = 0;
+  state.wrongCount = 0;
+  state.lessonFinished = false;
+  openLessonShell();
+}
+
+function startChineseTyping() {
+  if (state.learningLang !== 'zh') {
+    state.learningLang = 'zh';
+    state.completed = new Set(['0-0']);
+    buildSelects();
+    updateStats();
+    renderUnits();
+    saveState();
+  }
+  const bank = courseBank.zh.ex;
+  const onlyType = bank.filter(e => e.type === 'type' || e.type === 'listen');
+  state.exercises = shuffle(onlyType).slice(0, 4);
+  state.practiceMode = true;
+  state.idx = 0;
+  state.wrongCount = 0;
+  state.lessonFinished = false;
+  openLessonShell();
+  toast(t('toastZh'));
+}
+
+function openLessonShell() {
+  const modal = document.getElementById('lesson-modal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  document.getElementById('lesson-complete').classList.add('hidden');
+  document.body.style.overflow = 'hidden';
+  renderExercise();
+  updateLessonProgress();
+}
+
+function closeLesson() {
+  const modal = document.getElementById('lesson-modal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  document.body.style.overflow = '';
+  hideFeedback();
+  if (state.lessonFinished) {
+    if (!state.practiceMode) {
+      const key = state.currentUnit + '-' + state.currentLesson;
+      if (!state.completed.has(key)) {
+        state.completed.add(key);
+        state.xp += 25;
+        state.gems += 5;
+        if (state.hearts < 5) state.hearts = Math.min(5, state.hearts + 1);
+        toast('+25 XP 🎉');
+      } else {
+        state.xp += 10;
+        toast('+10 XP 🎉');
+      }
+    } else {
+      state.xp += 10;
+      state.gems += 2;
+      if (state.hearts < 5) state.hearts = Math.min(5, state.hearts + 1);
+      toast('+10 XP 🎉');
+    }
+    updateStats();
+    renderUnits();
+    saveState();
+  }
+  state.lessonFinished = false;
+}
+
+function updateLessonProgress() {
+  const total = Math.max(1, state.exercises.length);
+  const pct = (state.idx / total) * 100;
+  document.getElementById('lesson-progress').style.width = pct + '%';
+  document.getElementById('lesson-hearts').textContent = state.hearts;
+}
+
+/* ---------- EXERCISE RENDER ---------- */
+function renderExercise() {
+  const ex = state.exercises[state.idx];
+  const container = document.getElementById('exercise-container');
+  if (!ex) { showComplete(); return; }
+
+  state.selectedChoice = null;
+  state.selectedWords = [];
+  state.inputValue = '';
+  state.zhCommitted = '';
+  state.zhBuffer = '';
+  state.answered = false;
+  hideFeedback();
+  updateLessonProgress();
+
+  const isZh = state.learningLang === 'zh';
+  let html = '<div class="flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.18em] text-[#9AA8AD] mb-5">' +
+    '<span class="w-6 h-6 rounded-full bg-brandSoft text-brandDark flex items-center justify-center text-[10px]">' + (state.idx + 1) + '</span>' +
+    esc(t('ofLabel')) + ' ' + state.exercises.length +
+    (state.practiceMode ? ' • ' + esc(t('practiceTag')) : '') +
+  '</div>';
+
+  if (ex.type === 'choice') {
+    html += '<div class="max-w-[640px]">' +
+      '<h2 class="font-display font-black text-[25px] md:text-[32px] leading-[1.15] text-ink">' + esc(ex.q) + '</h2>' +
+      '<div class="mt-7 grid gap-3">' +
+        ex.options.map((opt, i) =>
+          '<button onclick="pickChoice(' + i + ')" data-opt-idx="' + i + '" class="choice-card text-left border-2 border-[#E7E2DA] rounded-2xl p-4 flex items-center gap-4 bg-white">' +
+            '<span class="w-8 h-8 rounded-xl border-2 border-[#E7E2DA] flex items-center justify-center font-display font-extrabold text-[13px] text-[#9AA8AD]">' + (i + 1) + '</span>' +
+            '<span class="flex-1 font-semibold text-[16px] text-ink">' + esc(opt) + '</span>' +
+            (ex.image ? '<span class="text-[25px]">' + (ex.image[i] || '') + '</span>' : '') +
+          '</button>'
+        ).join('') +
+      '</div></div>';
+  } else if (ex.type === 'bank') {
+    state.bankWords = ex.words.map((w, i) => ({id:i, text:w, used:false}));
+    html += '<div class="max-w-[700px]">' +
+      '<h2 class="font-display font-black text-[24px] md:text-[29px] leading-tight text-ink">' + esc(t('translateSentence')) + '</h2>' +
+      '<div class="mt-5 flex items-start gap-3">' +
+        '<div class="flex-1 min-h-[60px] bg-white border-2 border-[#E7E2DA] rounded-3xl px-5 py-4 flex flex-wrap gap-2 items-center" id="word-bank-answer"></div>' +
+      '</div>' +
+      '<div class="mt-6 flex flex-wrap gap-2.5" id="word-bank-pool">' +
+        state.bankWords.map(w =>
+          '<button onclick="addWord(' + w.id + ')" data-bank-id="' + w.id + '" class="word-tile px-4 py-2.5 rounded-xl font-semibold text-[15px] text-ink bg-white">' + esc(w.text) + '</button>'
+        ).join('') +
+      '</div></div>';
+  } else if (ex.type === 'type' || ex.type === 'listen') {
+    if (ex.type === 'listen') {
+      html += '<div class="flex items-center gap-4 mb-6">' +
+        '<button onclick="speakWord(\'' + esc(ex.answer).replace(/'/g, "\\'") + '\')" class="w-16 h-16 rounded-2xl bg-sky2 text-white flex items-center justify-center text-[26px] shadow-[0_5px_0_#1E77AD] btn-3d"><i class="ri-volume-up-fill"></i></button>' +
+        '<div class="text-[14px] text-[#6B7B82] font-semibold">' + esc(t('listenInstruction')) + '</div>' +
+      '</div>';
+    } else {
+      html += '<h2 class="font-display font-black text-[25px] md:text-[32px] leading-[1.15] text-ink">' + esc(ex.q) + '</h2>';
+    }
+    html += '<div class="mt-7 relative">' +
+      '<input id="text-input" type="text" autocomplete="off" autocapitalize="off" oninput="handleInput(this.value)" onkeydown="handleInputKey(event)" value="" placeholder="' + esc(t('typeHere')) + '" class="w-full bg-white border-2 border-[#E7E2DA] rounded-2xl px-5 py-4 outline-none focus:border-[#A9E0C8] font-semibold text-[16px] text-ink"/>' +
+    '</div>';
+
+    if (isZh) {
+      html += '<div class="mt-4">' +
+        '<div class="text-[11px] font-bold text-slate2 mb-2">' + esc(t('pinyinIme')) + '</div>' +
+        '<div id="zh-candidates" class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-[#FAF8F4] border-2 border-dashed border-[#E7E2DA] rounded-2xl items-center">' +
+          '<span class="text-[12px] text-[#9AA8AD] font-medium">' + esc(t('typePinyinPrompt')) + '</span>' +
+        '</div></div>' +
+        '<div class="mt-5">' +
+          '<div class="text-[11px] font-bold text-slate2 mb-2">' + esc(t('onScreenKb')) + '</div>' +
+          '<div class="grid grid-cols-10 gap-1.5 max-w-[600px]">' +
+            'qwertyuiop'.split('').map(k => '<button onclick="zhType(\'' + k + '\')" class="zh-key">' + k + '</button>').join('') +
+            'asdfghjkl'.split('').map(k => '<button onclick="zhType(\'' + k + '\')" class="zh-key">' + k + '</button>').join('') +
+            'zxcvbnm'.split('').map(k => '<button onclick="zhType(\'' + k + '\')" class="zh-key">' + k + '</button>').join('') +
+            '<button onclick="zhType(\' \')" class="zh-key fn col-span-2">␣</button>' +
+            '<button onclick="zhBackspace()" class="zh-key fn col-span-1"><i class="ri-delete-back-2-fill"></i></button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    if (ex.hint) {
+      html += '<div class="mt-5 inline-flex items-center gap-2 bg-[#FFF7E8] border border-[#F3DFB6] rounded-full px-3.5 py-2 text-[11px] font-bold text-[#B47B12]">' +
+        '<i class="ri-lightbulb-flash-line"></i> ' + esc(t('hint')) + ': ' + esc(ex.hint) + '</div>';
+    }
+  }
+
+  container.innerHTML = html;
+
+  if (ex.type === 'bank') {
+    renderBankAnswer();
+    renderBankPool();
+  }
+
+  const checkBtn = document.getElementById('check-btn');
+  checkBtn.disabled = true;
+  checkBtn.className = 'flex-1 md:flex-none bg-[#EEF1F0] text-[#A5B0B4] font-display font-black px-12 py-4 rounded-2xl text-[13px] tracking-[0.14em] transition-all';
+}
+
+function renderBankAnswer() {
+  const box = document.getElementById('word-bank-answer');
+  if (!box) return;
+  box.innerHTML = state.selectedWords.map((w, i) =>
+    '<div onclick="removeWord(' + i + ')" class="word-tile selected px-4 py-2.5 rounded-xl font-semibold text-[15px] text-ink cursor-pointer">' + esc(w.text) + '</div>'
+  ).join('');
+}
+
+function renderBankPool() {
+  const pool = document.getElementById('word-bank-pool');
+  if (!pool) return;
+  pool.querySelectorAll('[data-bank-id]').forEach(btn => {
+    const id = parseInt(btn.dataset.bankId);
+    const w = state.bankWords.find(x => x.id === id);
+    if (!w) return;
+    btn.classList.toggle('used', w.used);
+  });
+}
+
+/* ---------- INTERACTIONS ---------- */
+function pickChoice(idx) {
+  if (state.answered) return;
+  state.selectedChoice = idx;
+  document.querySelectorAll('[data-opt-idx]').forEach(b => b.classList.remove('selected'));
+  const el = document.querySelector('[data-opt-idx="' + idx + '"]');
+  if (el) el.classList.add('selected');
+  enableCheck();
+}
+
+function addWord(id) {
+  if (state.answered) return;
+  const w = state.bankWords.find(x => x.id === id);
+  if (w && !w.used) {
+    w.used = true;
+    state.selectedWords.push(w);
+    renderBankAnswer();
+    renderBankPool();
+    enableCheck();
+  }
+}
+
+function removeWord(idx) {
+  if (state.answered) return;
+  const w = state.selectedWords[idx];
+  if (w) {
+    const b = state.bankWords.find(x => x.id === w.id);
+    if (b) b.used = false;
+    state.selectedWords.splice(idx, 1);
+    renderBankAnswer();
+    renderBankPool();
+    if (state.selectedWords.length > 0) enableCheck(); else disableCheck();
+  }
+}
+
+function handleInput(val) {
+  state.inputValue = val;
+  if (state.learningLang === 'zh') updateZhCandidatesFromInput(val);
+  if (val.trim().length > 0) enableCheck(); else disableCheck();
+}
+
+function handleInputKey(e) {
+  if (e.key === 'Enter' && !document.getElementById('check-btn').disabled) checkAnswer();
+}
+
+/* ---------- PINYIN IME ---------- */
+function updateZhCandidatesFromInput(val) {
+  const buf = String(val || '').toLowerCase().replace(/[^a-z']/g, '');
+  state.zhBuffer = buf;
+  updateZhCandidates();
+}
+
+function updateZhCandidates() {
+  const candDiv = document.getElementById('zh-candidates');
+  if (!candDiv) return;
+  const buf = state.zhBuffer;
+  if (!buf) {
+    candDiv.innerHTML = '<span class="text-[12px] text-[#9AA8AD] font-medium">' + esc(t('typePinyinPrompt')) + '</span>';
+    return;
+  }
+  const matches = PINYIN_DICT[buf] || [];
+  candDiv.innerHTML = matches.length > 0
+    ? matches.map(h => '<button onclick="zhSelect(\'' + h + '\')" class="zh-cand">' + h + '</button>').join('')
+    : '<span class="text-[12px] text-[#9AA8AD] font-medium">' + esc(t('noMatch')) + ' "' + esc(buf) + '". ' + esc(t('tryWords')) + '</span>';
+}
+
+function zhType(k) {
+  if (state.answered) return;
+  const input = document.getElementById('text-input');
+  if (k === ' ') {
+    const matches = PINYIN_DICT[state.zhBuffer] || [];
+    if (matches.length > 0) { zhSelect(matches[0]); return; }
+    state.inputValue += ' ';
+  } else {
+    state.zhBuffer += k;
+    state.inputValue += k;
+  }
+  if (input) input.value = state.inputValue;
+  updateZhCandidates();
+  enableCheck();
+}
+
+function zhBackspace() {
+  if (state.answered) return;
+  const input = document.getElementById('text-input');
+  if (state.zhBuffer.length > 0) {
+    state.zhBuffer = state.zhBuffer.slice(0, -1);
+    state.inputValue = state.inputValue.slice(0, -1);
+  } else {
+    state.inputValue = state.inputValue.slice(0, -1);
+  }
+  if (input) input.value = state.inputValue;
+  updateZhCandidates();
+  if (state.inputValue.length === 0) disableCheck();
+}
+
+function zhSelect(h) {
+  if (state.answered) return;
+  const input = document.getElementById('text-input');
+  state.inputValue = state.inputValue.slice(0, state.inputValue.length - state.zhBuffer.length) + h;
+  state.zhBuffer = '';
+  if (input) input.value = state.inputValue;
+  updateZhCandidates();
+  enableCheck();
+}
+
+function speakWord(text) {
+  if ('speechSynthesis' in window) {
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = state.learningLang === 'zh' ? 'zh-CN' : state.learningLang;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+}
+
+/* ---------- CHECK BUTTON STATE ---------- */
+function enableCheck() {
+  const btn = document.getElementById('check-btn');
+  btn.disabled = false;
+  btn.className = 'flex-1 md:flex-none bg-brand text-white font-display font-black px-12 py-4 rounded-2xl text-[13px] tracking-[0.14em] transition-all shadow-[0_4px_0_#0C7B4F] btn-3d';
+}
+function disableCheck() {
+  const btn = document.getElementById('check-btn');
+  btn.disabled = true;
+  btn.className = 'flex-1 md:flex-none bg-[#EEF1F0] text-[#A5B0B4] font-display font-black px-12 py-4 rounded-2xl text-[13px] tracking-[0.14em] transition-all';
+}
+
+function skipExercise() {
+  if (state.idx < state.exercises.length - 1) { state.idx++; renderExercise(); }
+  else { showComplete(); }
+}
+
+/* ---------- ANSWER CHECKING ---------- */
+function checkAnswer() {
+  if (state.answered) return;
+  state.answered = true;
+  const ex = state.exercises[state.idx];
+  let correct = false;
+  let userAnswer = '';
+
+  if (ex.type === 'choice') {
+    userAnswer = ex.options[state.selectedChoice];
+    correct = userAnswer === ex.answer;
+  } else if (ex.type === 'bank') {
+    userAnswer = state.selectedWords.map(w => w.text).join(' ');
+    correct = normalize(userAnswer) === normalize(ex.answer);
+  } else {
+    userAnswer = state.inputValue;
+    if (state.learningLang === 'zh') correct = normalizeZh(userAnswer) === normalizeZh(ex.answer);
+    else correct = normalize(userAnswer) === normalize(ex.answer);
+  }
+
+  if (correct) {
+    showFeedback(true, t('correctTitle'), t('correctSub'));
+  } else {
+    state.wrongCount++;
+    if (!state.practiceMode) {
+      state.hearts = Math.max(0, state.hearts - 1);
+      updateStats();
+      const card = document.getElementById('exercise-container');
+      if (card) { card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 520); }
+    }
+    showFeedback(false, t('correctAnswer'), ex.answer);
+  }
+}
+
+function showFeedback(correct, title, text) {
+  const bar = document.getElementById('feedback-bar');
+  bar.classList.remove('hidden');
+  const icon = document.getElementById('feedback-icon');
+  const ttl = document.getElementById('feedback-title');
+  const txt = document.getElementById('feedback-text');
+  const btn = document.getElementById('feedback-btn');
+
+  if (correct) {
+    bar.className = 'border-t-2 px-4 md:px-8 py-4 md:py-6 shrink-0 bg-[#E4F6EE]';
+    icon.className = 'w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand text-white flex items-center justify-center text-[23px] shrink-0 shadow-sm';
+    icon.innerHTML = '<i class="ri-check-line"></i>';
+    ttl.className = 'font-display font-black text-[18px] leading-tight text-brandDark';
+    btn.className = 'shrink-0 font-display font-black px-6 md:px-8 py-3.5 rounded-2xl text-white btn-3d bg-brand shadow-[0_4px_0_#0C7B4F] text-[13px] tracking-[0.12em]';
+  } else {
+    bar.className = 'border-t-2 px-4 md:px-8 py-4 md:py-6 shrink-0 bg-[#FFF0EE]';
+    icon.className = 'w-12 h-12 md:w-14 md:h-14 rounded-full bg-coral text-white flex items-center justify-center text-[23px] shrink-0 shadow-sm';
+    icon.innerHTML = '<i class="ri-close-line"></i>';
+    ttl.className = 'font-display font-black text-[18px] leading-tight text-coral';
+    btn.className = 'shrink-0 font-display font-black px-6 md:px-8 py-3.5 rounded-2xl text-white btn-3d bg-coral shadow-[0_4px_0_#D85449] text-[13px] tracking-[0.12em]';
+  }
+
+  ttl.textContent = title;
+  txt.textContent = text;
+  document.getElementById('check-btn').disabled = true;
+}
+
+function hideFeedback() {
+  const bar = document.getElementById('feedback-bar');
+  if (bar) bar.classList.add('hidden');
+}
+
+function nextExercise() {
+  hideFeedback();
+  if (state.idx < state.exercises.length - 1) { state.idx++; renderExercise(); }
+  else { showComplete(); }
+}
+
+function showComplete() {
+  state.lessonFinished = true;
+  const complete = document.getElementById('lesson-complete');
+  complete.classList.remove('hidden');
+  complete.classList.add('flex');
+  const total = Math.max(1, state.exercises.length);
+  const accuracy = Math.round(((total - state.wrongCount) / total) * 100);
+  document.getElementById('complete-accuracy').textContent = accuracy + '%';
+  document.getElementById('complete-xp').textContent = state.practiceMode ? '+10' : '+25';
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+/* ---------- LANGUAGE MODAL ---------- */
+function openLangModal() {
+  document.getElementById('lang-modal').classList.remove('hidden');
+  document.getElementById('lang-modal').classList.add('flex');
+  renderLangGrid(document.getElementById('lang-search') ? document.getElementById('lang-search').value : '');
+}
+function closeLangModal() {
+  document.getElementById('lang-modal').classList.add('hidden');
+  document.getElementById('lang-modal').classList.remove('flex');
+}
+
+function changeUILang(code) {
+  state.uiLang = code;
+  applyI18n();
+  buildSelects();
+  saveState();
+  renderLangGrid(document.getElementById('lang-search') ? document.getElementById('lang-search').value : '');
+  toast(t('toastUi'));
+}
+
+function changeLearningLang(code) {
+  state.learningLang = code;
+  state.completed = new Set(['0-0']);
+  buildSelects();
+  updateStats();
+  renderUnits();
+  saveState();
+  renderLangGrid(document.getElementById('lang-search') ? document.getElementById('lang-search').value : '');
+  const meta = LANGUAGES.find(l => l.code === code);
+  if (meta) toast(meta.flag + ' ' + meta.name);
+}
+
+function renderLangGrid(filter) {
+  const grid = document.getElementById('lang-grid');
+  if (!grid) return;
+  const q = (filter || '').trim().toLowerCase();
+  const filtered = LANGUAGES.filter(l => (l.name + l.native + l.code).toLowerCase().includes(q));
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="col-span-2 md:col-span-3 text-center text-[13px] text-[#8D9AA0] font-semibold py-10">' + esc(t('noMatch')) + ' "' + esc(filter) + '"</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map((l, i) => {
+    const isLearning = l.code === state.learningLang;
+    const isUI = l.code === state.uiLang;
+    const cls = isLearning ? 'border-brand bg-brandSoft' : (isUI ? 'border-sky2 bg-[#EAF5FC]' : 'border-[#E7E2DA] bg-white');
+    return '<button onclick="changeLearningLang(\'' + l.code + '\')" class="pop text-left border-2 rounded-2xl p-3.5 flex items-center gap-3 hover:-translate-y-[3px] hover:shadow-soft transition-all duration-300 ' + cls + '" style="--d:' + Math.min(i * 35, 600) + 'ms">' +
+      '<span class="text-[27px] leading-none">' + l.flag + '</span>' +
+      '<span class="flex-1 min-w-0">' +
+        '<span class="font-display font-extrabold text-[13px] text-ink block leading-tight truncate">' + esc(l.native) + '</span>' +
+        '<span class="text-[10.5px] text-[#8D9AA0] font-semibold">' + esc(l.name) + (l.code === 'zh' ? ' • ⌨️' : '') + '</span>' +
+      '</span>' +
+      (isLearning ? '<span class="bg-brand text-white text-[9px] font-extrabold px-2 py-1 rounded-full tracking-[0.1em]">' + esc(t('badgeLearning')) + '</span>'
+        : (isUI ? '<span class="bg-sky2 text-white text-[9px] font-extrabold px-2 py-1 rounded-full tracking-[0.1em]">' + esc(t('badgeApp')) + '</span>' : '')) +
+    '</button>';
+  }).join('');
+}
+
+/* ---------- TOAST ---------- */
+function toast(msg) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast pointer-events-auto bg-ink text-white font-bold text-[13px] px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2';
+  el.innerHTML = '<i class="ri-information-line"></i> ' + esc(msg);
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .3s, transform .3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10px)';
+    setTimeout(() => el.remove(), 300);
+  }, 2500);
+}
+
+function confettiCelebrate() {
+  if (typeof confetti === 'function') {
+    confetti({particleCount: 120, spread: 75, origin: {y: 0.6}, colors: ['#12A56B', '#F5A524', '#2C93D5', '#F2685C']});
+  }
+}
+
+/* ---------- GLOBAL KEYBOARD SHORTCUTS ---------- */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const langModal = document.getElementById('lang-modal');
+    if (langModal && !langModal.classList.contains('hidden')) closeLangModal();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
